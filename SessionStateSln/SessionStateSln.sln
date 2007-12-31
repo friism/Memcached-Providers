@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SessionState", "SessionState\SessionState.csproj", "{0F42D625-A3A7-4928-9E92-ED458D87F4BF}"
+EndProject
+Project("{4F174C21-8C12-11D0-8340-0000F80270F8}") = "DbSQL", "DbSQL\DbSQL.dbp", "{C2D82F5B-A574-48B5-84FA-23888FB760E3}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 3
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfs06.codeplex.com/
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = DbSQL\\DbSQL.dbp
+		SccProjectName1 = DbSQL
+		SccLocalPath1 = DbSQL
+		SccProjectUniqueName2 = SessionState\\SessionState.csproj
+		SccProjectName2 = SessionState
+		SccLocalPath2 = SessionState
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0F42D625-A3A7-4928-9E92-ED458D87F4BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F42D625-A3A7-4928-9E92-ED458D87F4BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F42D625-A3A7-4928-9E92-ED458D87F4BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F42D625-A3A7-4928-9E92-ED458D87F4BF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
