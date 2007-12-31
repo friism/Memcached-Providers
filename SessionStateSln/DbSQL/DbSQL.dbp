@@ -20,6 +20,7 @@ Begin DataProject = "DbSQL"
    End
    Begin Folder = "Stored Procs"
       Script = "proc_Add.sql"
+      Script = "proc_CleanExpiredData.sql"
       Script = "proc_GetItem.sql"
       Script = "proc_LockItem.sql"
       Script = "proc_LockItemWithoutLockId.sql"
