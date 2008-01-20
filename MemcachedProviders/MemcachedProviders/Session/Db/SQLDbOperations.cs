@@ -8,7 +8,7 @@ using System.Web.SessionState;
 using System.Web;
 using System.Data.SqlTypes;
 
-namespace SessionState.Db
+namespace MemcachedProviders.Session.Db
 {
     internal class SQLDbOperations : IDbOperations
     {

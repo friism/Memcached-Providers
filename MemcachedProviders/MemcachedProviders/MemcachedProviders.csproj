@@ -61,10 +61,10 @@
     <Compile Include="Cache\DistCache.cs" />
     <Compile Include="Cache\MemcachedCacheProvider.cs" />
     <Compile Include="Common\MemcachedService.cs" />
-    <Compile Include="Db\IDbOperations.cs" />
-    <Compile Include="Db\SQLDbOperations.cs" />
-    <Compile Include="Memcached\MemcachedOperations.cs" />
-    <Compile Include="Memcached\MemcacheHolder.cs" />
+    <Compile Include="Session\Db\IDbOperations.cs" />
+    <Compile Include="Session\Db\SQLDbOperations.cs" />
+    <Compile Include="Session\Memcached\MemcachedOperations.cs" />
+    <Compile Include="Session\Memcached\MemcachedHolder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

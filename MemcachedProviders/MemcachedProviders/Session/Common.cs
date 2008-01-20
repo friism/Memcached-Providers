@@ -4,10 +4,11 @@ using System.Text;
 using System.Web.SessionState;
 using System.Web;
 using System.IO;
-using SessionState.Db;
+using MemcachedProviders.Session;
 using System.Diagnostics;
+using MemcachedProviders.Session.Db;
 
-namespace SessionState
+namespace MemcachedProviders.Session
 {
     internal class Common
     {

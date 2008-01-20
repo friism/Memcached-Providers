@@ -10,8 +10,9 @@ using System.Web.Configuration;
 using System.Configuration;
 using Memcached.ClientLibrary;
 using System.Diagnostics;
-using SessionState.Memcached;
-using SessionState.Db;
+using MemcachedProviders.Session.Memcached;
+using MemcachedProviders.Session.Db;
+using MemcachedProviders.Session;
 
 namespace SessionState
 {
@@ -158,7 +159,7 @@ namespace SessionState
 
             #region Updating item in memcached
             MemcachedOperations objMemOper = this.GetMemClient();
-            MemcacheHolder objHolder = new MemcacheHolder(
+            MemcachedHolder objHolder = new MemcachedHolder(
                 null,false,dSetTime, 0, 1);
                         
             objMemOper.Add(id, objHolder,this.GetMilliSecOfMinutes(timeout));
@@ -182,7 +183,7 @@ namespace SessionState
             MemcachedOperations objMemOper = this.GetMemClient();
             SessionStateStoreData objItem = null;
 
-            MemcacheHolder objHolder = objMemOper.Get(id) as MemcacheHolder;
+            MemcachedHolder objHolder = objMemOper.Get(id) as MemcachedHolder;
             DateTime dSetTime = DateTime.Now;
 
             if (objHolder != null)
@@ -249,7 +250,7 @@ namespace SessionState
             MemcachedOperations objMemOper = this.GetMemClient();
             SessionStateStoreData objItem = null;
 
-            MemcacheHolder objHolder = objMemOper.Get(id) as MemcacheHolder;
+            MemcachedHolder objHolder = objMemOper.Get(id) as MemcachedHolder;
             DateTime dSetTime = DateTime.Now;
 
             if (objHolder != null)
@@ -321,7 +322,7 @@ namespace SessionState
         {
             #region Updating item in memcached
             MemcachedOperations objMemOper = this.GetMemClient();
-            MemcacheHolder objHolder = objMemOper.Get(id) as MemcacheHolder;
+            MemcachedHolder objHolder = objMemOper.Get(id) as MemcachedHolder;
 
             if (objHolder != null)
             {
@@ -392,7 +393,7 @@ namespace SessionState
                         objContent, 0);
 
                     // Setting it up in memcached                    
-                   MemcacheHolder objHolder = new MemcacheHolder(
+                   MemcachedHolder objHolder = new MemcachedHolder(
                         objContent, false, dSetTime, 0, 0);
                     objMemOper.Add(id, objHolder,
                         this.GetMilliSecOfMinutes(item.Timeout));
@@ -405,7 +406,7 @@ namespace SessionState
                         objContent, false);
 
                     // Setting it up in memcached                    
-                    MemcacheHolder objHolder = new MemcacheHolder(
+                    MemcachedHolder objHolder = new MemcachedHolder(
                         objContent, false, dSetTime, 0, 0);
                     objMemOper.Add(id, objHolder,
                         this.GetMilliSecOfMinutes(item.Timeout));

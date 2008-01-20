@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Memcached.ClientLibrary;
 
-namespace SessionState.Memcached
+namespace MemcachedProviders.Session.Memcached
 {
     public class MemcachedOperations
     {

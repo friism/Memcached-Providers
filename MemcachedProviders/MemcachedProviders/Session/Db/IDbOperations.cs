@@ -4,7 +4,7 @@ using System.Text;
 using System.Web.SessionState;
 using System.Web;
 
-namespace SessionState.Db
+namespace MemcachedProviders.Session.Db
 {
     public interface IDbOperations : IDisposable
     {

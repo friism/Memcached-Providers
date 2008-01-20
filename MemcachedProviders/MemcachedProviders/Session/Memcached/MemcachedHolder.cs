@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SessionState.Memcached
+namespace MemcachedProviders.Session.Memcached
 {
     [Serializable]
-    internal class MemcacheHolder
+    internal class MemcachedHolder
     {
         private byte[] _objContent;
         private bool _bLocked;
@@ -13,7 +13,7 @@ namespace SessionState.Memcached
         private int _iLockId;
         private int _iActionFlag;
 
-        public MemcacheHolder(byte[] objContent, bool bLocked,
+        public MemcachedHolder(byte[] objContent, bool bLocked,
             DateTime dSetTime, int iLockId, int iActionFlag)
         {
             this._iActionFlag = iActionFlag;
