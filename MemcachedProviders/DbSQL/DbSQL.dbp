@@ -1,0 +1,33 @@
+# Microsoft Developer Studio Project File - Database Project
+Begin DataProject = "DbSQL"
+   MSDTVersion = "80"
+   DefDBRef = "mylaptop.Session.dbo"
+   SccProjectName = "SAK"
+   SccLocalPath = "SAK"
+   SccAuxPath = "SAK"
+   SccProvider = "SAK"
+   Begin Folder = "Create Scripts"
+      Script = "Table.sql"
+   End
+   Begin DBRefFolder = "Database References"
+      Begin DBRefNode = "mylaptop.Session.dbo"
+         ConnectStr = "Data Source=.;Initial Catalog=Session;Integrated Security=True;Pooling=False"
+         Provider = "{91510608-8809-4020-8897-FBA057E22D54}"
+         Colorizer = 6
+      End
+   End
+   Begin Folder = "Queries"
+   End
+   Begin Folder = "Stored Procs"
+      Script = "proc_Add.sql"
+      Script = "proc_CleanExpiredData.sql"
+      Script = "proc_GetItem.sql"
+      Script = "proc_LockItem.sql"
+      Script = "proc_LockItemWithoutLockId.sql"
+      Script = "proc_ReleaseItem.sql"
+      Script = "proc_RemoveItem.sql"
+      Script = "proc_RemoveItemWithLock.sql"
+      Script = "proc_ResetItemTimeout.sql"
+      Script = "proc_Update.sql"
+   End
+End

@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemcachedProviders", "MemcachedProviders\MemcachedProviders.csproj", "{B062D12C-EFB7-4CB5-B560-FB2387468E82}"
+EndProject
+Project("{4F174C21-8C12-11D0-8340-0000F80270F8}") = "DbSQL", "DbSQL\DbSQL.dbp", "{DB3A5DF6-A085-4003-8BED-4980FA6D0E75}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 3
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfs06.codeplex.com/
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = DbSQL\\DbSQL.dbp
+		SccProjectName1 = DbSQL
+		SccLocalPath1 = DbSQL
+		SccProjectUniqueName2 = MemcachedProviders\\MemcachedProviders.csproj
+		SccProjectName2 = MemcachedProviders
+		SccLocalPath2 = MemcachedProviders
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B062D12C-EFB7-4CB5-B560-FB2387468E82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B062D12C-EFB7-4CB5-B560-FB2387468E82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B062D12C-EFB7-4CB5-B560-FB2387468E82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B062D12C-EFB7-4CB5-B560-FB2387468E82}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
