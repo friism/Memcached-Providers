@@ -57,7 +57,7 @@
     <Compile Include="Cache\CacheProvider.cs" />
     <Compile Include="Cache\CacheProviderCollection.cs" />
     <Compile Include="Cache\CacheProviderSection.cs" />
-    <Compile Include="Cache\ConfigurationUtil.cs" />
+    <Compile Include="Common\ConfigurationUtil.cs" />
     <Compile Include="Cache\DistCache.cs" />
     <Compile Include="Cache\MemcachedCacheProvider.cs" />
     <Compile Include="Common\MemcachedService.cs" />

@@ -13,6 +13,7 @@ using System.Diagnostics;
 using MemcachedProviders.Session.Memcached;
 using MemcachedProviders.Session.Db;
 using MemcachedProviders.Session;
+using MemcachedProviders.Common;
 
 namespace SessionState
 {

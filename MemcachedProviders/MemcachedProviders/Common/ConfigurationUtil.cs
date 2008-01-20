@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MemcachedProviders.Cache
+namespace MemcachedProviders.Common
 {
     public static class ConfigurationUtil
     {
