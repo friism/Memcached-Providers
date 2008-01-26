@@ -5,9 +5,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemcachedProviders", "Memca
 EndProject
 Project("{4F174C21-8C12-11D0-8340-0000F80270F8}") = "DbSQL", "DbSQL\DbSQL.dbp", "{DB3A5DF6-A085-4003-8BED-4980FA6D0E75}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheProvider.Test", "CacheProvider.Test\CacheProvider.Test.csproj", "{2847DCDA-5163-42C0-87A0-2BD6945C0B52}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
+		SccNumberOfProjects = 4
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs06.codeplex.com/
 		SccLocalPath0 = .
@@ -17,6 +19,9 @@ Global
 		SccProjectUniqueName2 = MemcachedProviders\\MemcachedProviders.csproj
 		SccProjectName2 = MemcachedProviders
 		SccLocalPath2 = MemcachedProviders
+		SccProjectUniqueName3 = CacheProvider.Test\\CacheProvider.Test.csproj
+		SccProjectName3 = CacheProvider.Test
+		SccLocalPath3 = CacheProvider.Test
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +32,10 @@ Global
 		{B062D12C-EFB7-4CB5-B560-FB2387468E82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B062D12C-EFB7-4CB5-B560-FB2387468E82}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B062D12C-EFB7-4CB5-B560-FB2387468E82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2847DCDA-5163-42C0-87A0-2BD6945C0B52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2847DCDA-5163-42C0-87A0-2BD6945C0B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2847DCDA-5163-42C0-87A0-2BD6945C0B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2847DCDA-5163-42C0-87A0-2BD6945C0B52}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

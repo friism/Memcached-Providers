@@ -45,7 +45,6 @@ namespace MemcachedProviders.Cache
                 }
             }
         }
-               
         
         public static long DefaultExpireTime
         {
@@ -59,6 +58,21 @@ namespace MemcachedProviders.Cache
             {
                 LoadProvider();
                 _objProvider.DefaultExpireTime = value;                
+            }
+        }
+
+        public static string KeySuffix
+        {
+            get
+            {
+                LoadProvider();
+                return _objProvider.KeySuffix;
+            }
+
+            set 
+            {
+                LoadProvider();
+                _objProvider.KeySuffix = value;
             }
         }
 
@@ -80,10 +94,22 @@ namespace MemcachedProviders.Cache
             return _objProvider.Add(strKey, objValue, lNumofMilliSeconds);
         }
 
+        public static bool Add(string strKey, object objValue, TimeSpan tspan)
+        {
+            LoadProvider();
+            return _objProvider.Add(strKey, objValue, tspan); 
+        }
+        
         public static object Get(string strKey)
         {
             LoadProvider();
             return _objProvider.Get(strKey);
+        }
+
+        public static T Get<T>(string strKey)
+        {
+            LoadProvider();
+            return _objProvider.Get<T>(strKey);
         }
 
         public static object Remove(string strKey)
@@ -96,6 +122,18 @@ namespace MemcachedProviders.Cache
         {
             LoadProvider();
             _objProvider.RemoveAll();
+        }
+
+        public static long Increment(string strKey, long lAmount)
+        {
+            LoadProvider();
+            return _objProvider.Increment(strKey, lAmount); 
+        }
+
+        public static long Decrement(string strKey, long lAmount)
+        {
+            LoadProvider();
+            return _objProvider.Decrement(strKey, lAmount); 
         }
 
     }
