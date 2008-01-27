@@ -105,9 +105,15 @@ namespace MemcachedProviders.Cache
                     DateTime.Now.AddMilliseconds(lNumOfMilliSeconds));
         }
 
+        public override bool Add(string strKey, object objValue, TimeSpan timeSpan)
+        {
+            return this._client.Store(StoreMode.Set, _strKeySuffix + strKey,
+                objValue, timeSpan);
+        }
+
         public override object Get(string strKey)
         {
-            return this._client.Get(strKey);
+            return this._client.Get(_strKeySuffix + strKey);
         }
 
         public override void RemoveAll()
@@ -117,7 +123,7 @@ namespace MemcachedProviders.Cache
 
         public override bool Remove(string strKey)
         {
-            return this._client.Remove(strKey);            
+            return this._client.Remove(_strKeySuffix + strKey);            
         }
 
         public override string KeySuffix
@@ -131,26 +137,20 @@ namespace MemcachedProviders.Cache
                 this._strKeySuffix = value;
             }
         }
-
-        public override bool Add(string strKey, object objValue, TimeSpan timeSpan)
-        {
-            return this._client.Store(StoreMode.Set, _strKeySuffix + strKey,
-                objValue, timeSpan);
-        }
-
+        
         public override T Get<T>(string strKey)
         {
-            return this._client.Get<T>(strKey);
+            return this._client.Get<T>(_strKeySuffix+strKey);
         }
 
         public override long Increment(string strKey, long lAmount)
         {
-            return this._client.Increment(strKey, (uint)lAmount);
+            return this._client.Increment(_strKeySuffix +strKey, (uint)lAmount);
         }
 
         public override long Decrement(string strKey, long lAmount)
         {
-            return this._client.Decrement(strKey, (uint)lAmount);
+            return this._client.Decrement(_strKeySuffix + strKey, (uint)lAmount);
         }
         #endregion
     }
