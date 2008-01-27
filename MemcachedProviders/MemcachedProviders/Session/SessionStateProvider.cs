@@ -26,6 +26,7 @@ namespace MemcachedProviders.Session
         private ConnectionStringSettings _objConnectionStringSettings;
         private SessionStateSection _objConfig = null;
         private bool _objWriteExceptionsToEventLog = false;
+        private bool _bIsDbNone = false;
 
         // Memcached variables
         private MemcachedClient _client = MemcachedClientService.Instance.Client;
@@ -49,8 +50,6 @@ namespace MemcachedProviders.Session
             //
             // Initialize values from web.config.
             //
-
-            this._strDbType = Common.DbType.SQLServer;
 
             if (config == null)
                 throw new ArgumentNullException("config");
@@ -83,20 +82,32 @@ namespace MemcachedProviders.Session
             _objConfig =
               (SessionStateSection)cfg.GetSection("system.web/sessionState");
 
-            //
-            // Initialize connection string.
-            //
-            _objConnectionStringSettings =
-              ConfigurationManager.ConnectionStrings[config["connectionStringName"]];
-
-            if (_objConnectionStringSettings == null ||
-              _objConnectionStringSettings.ConnectionString.Trim() == "")
+            if (!string.IsNullOrEmpty(config["dbType"]))
             {
-                throw new ProviderException("Connection string cannot be blank.");
+                if (config["dbType"].ToLower() == "none")
+                {
+                    this._strDbType = Common.DbType.None;
+                    this._bIsDbNone = true;
+                }
+                else
+                {
+                    this._strDbType = Common.DbType.SQLServer;
+                    this._bIsDbNone = false;
+                    //
+                    // Initialize connection string.
+                    //
+                    _objConnectionStringSettings =
+                      ConfigurationManager.ConnectionStrings[config["connectionStringName"]];
+
+                    if (_objConnectionStringSettings == null ||
+                      _objConnectionStringSettings.ConnectionString.Trim() == "")
+                    {
+                        throw new ProviderException("Connection string cannot be blank.");
+                    }
+
+                    _strConn = _objConnectionStringSettings.ConnectionString;
+                }
             }
-
-            _strConn = _objConnectionStringSettings.ConnectionString;
-
             //
             // Initialize Memcached Values
             //
@@ -124,14 +135,17 @@ namespace MemcachedProviders.Session
         {
             DateTime dSetTime = DateTime.Now;
 
-            #region Setting it in Db
-            using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+            if (this._bIsDbNone == false)
             {
-                objDb.Add(id, ApplicationName, dSetTime,
-                    dSetTime.AddMinutes((double)timeout),
-                    dSetTime, 0, timeout, false, null, 1);
+                #region Setting it in Db
+                using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                {
+                    objDb.Add(id, ApplicationName, dSetTime,
+                        dSetTime.AddMinutes((double)timeout),
+                        dSetTime, 0, timeout, false, null, 1);
+                }
+                #endregion
             }
-            #endregion
 
             #region Updating item in memcached
 
@@ -161,16 +175,15 @@ namespace MemcachedProviders.Session
             MemcachedHolder objHolder = this._client.Get<MemcachedHolder>(id);
             DateTime dSetTime = DateTime.Now;
 
+            #region Initialized
+            lockAge = TimeSpan.Zero;
+            lockId = null;
+            locked = false;
+            actions = 0;
+            #endregion
+
             if (objHolder != null)
             {
-                #region Initialized
-
-                lockAge = TimeSpan.Zero;
-                lockId = null;
-                locked = false;
-                actions = 0;
-                #endregion
-
                 if (objHolder.Locked == false)
                 {
                     #region
@@ -183,9 +196,12 @@ namespace MemcachedProviders.Session
                     lockId = objHolder.LockId;
                     lockAge = objHolder.LockAge;
 
-                    using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                    if (this._bIsDbNone == false) // Saving to Db
                     {
-                        objDb.LockItem(id, ApplicationName, objHolder.LockId);
+                        using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                        {
+                            objDb.LockItem(id, ApplicationName, objHolder.LockId);
+                        }
                     }
 
                     if (actions == SessionStateActions.InitializeItem)
@@ -212,10 +228,17 @@ namespace MemcachedProviders.Session
             }
             else
             {
-                using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                if (this._bIsDbNone == false)
                 {
-                    return objDb.GetItem(id, ApplicationName, _objConfig.Timeout.Minutes,
-                        context, false, out locked, out lockAge, out lockId, out actions);
+                    using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                    {
+                        return objDb.GetItem(id, ApplicationName, _objConfig.Timeout.Minutes,
+                            context, false, out locked, out lockAge, out lockId, out actions);
+                    }
+                }
+                else
+                {
+                    return objItem;
                 }
             }
         }
@@ -227,15 +250,15 @@ namespace MemcachedProviders.Session
             MemcachedHolder objHolder = this._client.Get<MemcachedHolder>(id);
             DateTime dSetTime = DateTime.Now;
 
+            #region Initialized
+            lockAge = TimeSpan.Zero;
+            lockId = null;
+            locked = false;
+            actions = 0;
+            #endregion
+
             if (objHolder != null)
             {
-                #region Initialized
-                lockAge = TimeSpan.Zero;
-                lockId = null;
-                locked = false;
-                actions = 0;
-                #endregion
-
                 if (objHolder.Locked == false)
                 {
                     #region
@@ -248,10 +271,13 @@ namespace MemcachedProviders.Session
                     lockId = objHolder.LockId;
                     lockAge = objHolder.LockAge;
 
-                    using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                    if (this._bIsDbNone == false) // Saving to Db
                     {
-                        locked = objDb.LockItemWithoutLockId(id, ApplicationName);
-                        objDb.LockItem(id, ApplicationName, objHolder.LockId);
+                        using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                        {
+                            locked = objDb.LockItemWithoutLockId(id, ApplicationName);
+                            objDb.LockItem(id, ApplicationName, objHolder.LockId);
+                        }
                     }
 
                     if (actions == SessionStateActions.InitializeItem)
@@ -279,10 +305,17 @@ namespace MemcachedProviders.Session
             }
             else
             {
-                using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                if (this._bIsDbNone == false) // Saving to Db
                 {
-                    return objDb.GetItem(id, ApplicationName, _objConfig.Timeout.Minutes,
-                        context, true, out locked, out lockAge, out lockId, out actions);
+                    using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                    {
+                        return objDb.GetItem(id, ApplicationName, _objConfig.Timeout.Minutes,
+                            context, true, out locked, out lockAge, out lockId, out actions);
+                    }
+                }
+                else
+                {
+                    return objItem;
                 }
             }
         }
@@ -305,12 +338,15 @@ namespace MemcachedProviders.Session
             }
             #endregion
 
-            #region Updating Database
-            using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+            if (this._bIsDbNone == false)
             {
-                objDb.ReleaseItem(id, ApplicationName, (int)lockId, _objConfig.Timeout.Minutes);
+                #region Updating Database
+                using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                {
+                    objDb.ReleaseItem(id, ApplicationName, (int)lockId, _objConfig.Timeout.Minutes);
+                }
+                #endregion
             }
-            #endregion
         }
 
         public override void RemoveItem(System.Web.HttpContext context, string id, object lockId, SessionStateStoreData item)
@@ -319,12 +355,15 @@ namespace MemcachedProviders.Session
             this._client.Remove(id);
             #endregion
 
-            #region Removing item from db
-            using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+            if (this._bIsDbNone == false) // Saving to Db
             {
-                objDb.RemoveItem(id, ApplicationName);
+                #region Removing item from db
+                using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                {
+                    objDb.RemoveItem(id, ApplicationName);
+                }
+                #endregion
             }
-            #endregion
         }
 
         public override void ResetItemTimeout(System.Web.HttpContext context, string id)
@@ -338,18 +377,60 @@ namespace MemcachedProviders.Session
             }
             #endregion
 
-            #region Reset Item Timeout in db
-            using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+            if (this._bIsDbNone == false) // Saving to Db
             {
-                objDb.ResetItemTimeout(id, ApplicationName, _objConfig.Timeout.Minutes);
+                #region Reset Item Timeout in db
+                using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                {
+                    objDb.ResetItemTimeout(id, ApplicationName, _objConfig.Timeout.Minutes);
+                }
+                #endregion
             }
-            #endregion
         }
 
         public override void SetAndReleaseItemExclusive(System.Web.HttpContext context,
             string id, SessionStateStoreData item, object lockId, bool newItem)
         {
-            using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+            if (this._bIsDbNone == false)
+            {
+                #region Db option
+                using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
+                {
+                    byte[] objContent = null;
+                    DateTime dSetTime = DateTime.Now;
+
+                    objContent = Common.Serialize((SessionStateItemCollection)item.Items);
+
+                    if (newItem == true)
+                    {
+                        objDb.Add(id, ApplicationName, dSetTime,
+                            dSetTime.AddMinutes((Double)item.Timeout), dSetTime,
+                            0, item.Timeout, false,
+                            objContent, 0);
+
+                        // Setting it up in memcached                    
+                        MemcachedHolder objHolder = new MemcachedHolder(
+                             objContent, false, dSetTime, 0, 0);
+                        this._client.Store(StoreMode.Set,
+                            id, objHolder, new TimeSpan(0, item.Timeout, 0));
+                    }
+                    else
+                    {
+                        objDb.Update(id, ApplicationName, (int)lockId,
+                            dSetTime.AddMinutes((Double)item.Timeout),
+                            objContent, false);
+
+                        // Setting it up in memcached                    
+                        MemcachedHolder objHolder = new MemcachedHolder(
+                            objContent, false, dSetTime, 0, 0);
+
+                        this._client.Store(StoreMode.Set,
+                            id, objHolder, new TimeSpan(0, item.Timeout, 0));
+                    }
+                }
+                #endregion
+            }
+            else // Just memcached version
             {
                 byte[] objContent = null;
                 DateTime dSetTime = DateTime.Now;
@@ -358,10 +439,10 @@ namespace MemcachedProviders.Session
 
                 if (newItem == true)
                 {
-                    objDb.Add(id, ApplicationName, dSetTime,
+                    /*objDb.Add(id, ApplicationName, dSetTime,
                         dSetTime.AddMinutes((Double)item.Timeout), dSetTime,
                         0, item.Timeout, false,
-                        objContent, 0);
+                        objContent, 0);*/
 
                     // Setting it up in memcached                    
                     MemcachedHolder objHolder = new MemcachedHolder(
@@ -371,17 +452,18 @@ namespace MemcachedProviders.Session
                 }
                 else
                 {
+                    /*
                     objDb.Update(id, ApplicationName, (int)lockId,
                         dSetTime.AddMinutes((Double)item.Timeout),
-                        objContent, false);
+                        objContent, false);*/
 
                     // Setting it up in memcached                    
                     MemcachedHolder objHolder = new MemcachedHolder(
                         objContent, false, dSetTime, 0, 0);
-                    
+
                     this._client.Store(StoreMode.Set,
                         id, objHolder, new TimeSpan(0, item.Timeout, 0));
-                }
+                } 
             }
         }
 

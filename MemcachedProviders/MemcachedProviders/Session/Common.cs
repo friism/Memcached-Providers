@@ -80,6 +80,12 @@ namespace MemcachedProviders.Session
             public static string SQLServer
             { get { return "SQLServer"; } }
 
+            public static string None
+            { get { return "None"; } }
+
+            public static string MySQL
+            { get { return "MySQL"; } }
+
             public static string Oracle
             { get { return "Oracle"; } }
         }        
