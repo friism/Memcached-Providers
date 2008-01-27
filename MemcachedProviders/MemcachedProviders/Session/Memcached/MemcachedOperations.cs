@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Memcached.ClientLibrary;
+
 
 namespace MemcachedProviders.Session.Memcached
 {
