@@ -112,6 +112,12 @@ namespace MemcachedProviders.Cache
             return _objProvider.Get<T>(strKey);
         }
 
+        public static IDictionary<string, object> Get(params string[] keys)
+        {
+            LoadProvider();
+            return _objProvider.Get(keys);
+        }
+
         public static object Remove(string strKey)
         {
             LoadProvider();

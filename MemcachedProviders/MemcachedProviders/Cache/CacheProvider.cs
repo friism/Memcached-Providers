@@ -17,9 +17,10 @@ namespace MemcachedProviders.Cache
         public abstract bool Add(string strKey, object objValue, TimeSpan timeSpan);
         public abstract object Get(string strKey);
         public abstract T Get<T>(string strKey);
+        public abstract IDictionary<string, object> Get(params string [] keys); 
         public abstract void RemoveAll();
         public abstract bool Remove(string strKey);        
         public abstract long Increment(string key, long amount);
-        public abstract long Decrement(string key, long amount);        
+        public abstract long Decrement(string key, long amount);          
     }
 }

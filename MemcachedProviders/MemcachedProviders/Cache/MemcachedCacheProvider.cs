@@ -112,8 +112,33 @@ namespace MemcachedProviders.Cache
         }
 
         public override object Get(string strKey)
-        {
+        {            
             return this._client.Get(_strKeySuffix + strKey);
+        }
+
+        /// <summary>
+        /// This method will work with memcached 1.2.4 and higher
+        /// </summary>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        public override IDictionary<string, object> Get(params string[] keys)
+        {
+            IList<string> keysList = new List<string>();
+
+            foreach (string str in keys)
+            {
+                keysList.Add(_strKeySuffix + str); 
+            }
+
+            IDictionary<string, object> _ret = this._client.Get(keysList);
+            IDictionary<string, object> _retVal = new Dictionary<string, object>();
+
+            foreach (string str in _ret.Keys)
+            {
+                _retVal.Add(str.Remove(0, _strKeySuffix.Length), _ret[str]); 
+            }
+
+            return _retVal;
         }
 
         public override void RemoveAll()

@@ -38,6 +38,8 @@ namespace CacheProvider.Test
                 Assert.IsTrue(DistCache.Add(strKey, strValue),"Error adding value");
             }
 
+            Debug.WriteLine("-------------------");
+
             using (CalcTimeSpan calc = new CalcTimeSpan("Time for Getting"))
             {
                 strReturned = DistCache.Get(strKey) as string;
@@ -46,26 +48,34 @@ namespace CacheProvider.Test
             Debug.WriteLine("Returned: "+ (strReturned == null));
 
             Assert.IsTrue(strValue.Equals(strReturned),string.Format("Not the same: {0}",strReturned));
-        }        
+        }
 
         [NUnit.Framework.Test]
-        public void CheckExpire_TimeSpan_Positive_Test()
+        public void Get_Multiple_Positive_Test()
         {
-            Debug.WriteLine("-------------CheckExpire_TimeSpan_Positive_Test()------------");
-            string strKey = "key11";
-            string strValue = "Fahad";
+            Debug.WriteLine("-------------Get_Multiple_Positive_Test()------------");
+            
+            string[] keys = new string[10];
 
             using (CalcTimeSpan calc = new CalcTimeSpan("Time for Setting"))
             {
-                Assert.IsTrue(DistCache.Add(strKey, strValue,500));
+                for (int i = 0; i < 10; i++)
+                {
+                    DistCache.Add(i.ToString(), i * 2);
+                    keys[i] = i.ToString();
+                }
             }
-
-            System.Threading.Thread.Sleep(2500);
 
             using (CalcTimeSpan calc = new CalcTimeSpan("Time for Getting"))
             {
-                Assert.IsNull(DistCache.Get(strKey));
+                IDictionary<string, object> _retVal = DistCache.Get(keys);
+
+                for (int i = 0; i < 10; i++)
+                {
+                    Assert.IsTrue( ((int)_retVal[keys[i]]) == (i * 2));
+                }                
             }
+ 
         }
 
         [NUnit.Framework.Test]
