@@ -7,6 +7,11 @@ Project("{4F174C21-8C12-11D0-8340-0000F80270F8}") = "DbSQL", "DbSQL\DbSQL.dbp", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheProvider.Test", "CacheProvider.Test\CacheProvider.Test.csproj", "{2847DCDA-5163-42C0-87A0-2BD6945C0B52}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EAF584A0-A5F1-47BF-BC54-004C3978ACE8}"
+	ProjectSection(SolutionItems) = preProject
+		License.txt = License.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 4
