@@ -338,6 +338,10 @@ namespace MemcachedProviders.Session
                     #region
                     objHolder.LockId++;
                     objHolder.SetTime = dSetTime;
+
+                    // Locking Item for memcached
+                    objHolder.Locked = true;
+                    
                     this._client.Store(StoreMode.Set, id, objHolder,
                         new TimeSpan(0, 0, 0, 0, _objConfig.Timeout.Milliseconds));
 

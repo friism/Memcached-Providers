@@ -1,0 +1,116 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{D438C0B3-A168-40B8-BDDD-61F0939DFF35}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Enyim.Caching</RootNamespace>
+    <AssemblyName>Enyim.Caching</AssemblyName>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;SIGN</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Enyim\binaries\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Configuration\ConfigurationHelper.cs" />
+    <Compile Include="Memcached\Transcoders\DefaultTranscoder.cs" />
+    <Compile Include="Configuration\IMemcachedClientConfiguration.cs" />
+    <Compile Include="Configuration\EndPointElement.cs" />
+    <Compile Include="Configuration\InterfaceValidator.cs" />
+    <Compile Include="Configuration\ISocketPoolConfiguration.cs" />
+    <Compile Include="Configuration\MemcachedClientConfiguration.cs" />
+    <Compile Include="Configuration\SocketPoolElement.cs" />
+    <Compile Include="Configuration\EndPointElementCollection.cs" />
+    <Compile Include="FastActivator.cs" />
+    <Compile Include="IFastObjectFacory.cs" />
+    <Compile Include="IKeyTransformer.cs" />
+    <Compile Include="Memcached\DefaultNodeLocator.cs" />
+    <Compile Include="Memcached\IMemcachedNodeLocator.cs" />
+    <Compile Include="Memcached\KeyTransformers\Base64Transformer.cs" />
+    <Compile Include="Memcached\KeyTransformers\DefaultKeyTransformer.cs" />
+    <Compile Include="Memcached\KeyTransformers\SHA1HashTransformer.cs" />
+    <Compile Include="Memcached\KeyTransformers\TigerHashTransformer.cs" />
+    <Compile Include="Memcached\Operations\GetHelper.cs" />
+    <Compile Include="Memcached\Operations\MultiGetOperation.cs" />
+    <Compile Include="Memcached\Operations\StatsOperation.cs" />
+    <Compile Include="Memcached\Operations\DecrementOperation.cs" />
+    <Compile Include="Memcached\Operations\DeleteOperation.cs" />
+    <Compile Include="FnvHash.cs" />
+    <Compile Include="Memcached\Operations\FlushOperation.cs" />
+    <Compile Include="Memcached\Operations\GetOperation.cs" />
+    <Compile Include="MemcachedClient.cs" />
+    <Compile Include="Memcached\MemcachedClientException.cs" />
+    <Compile Include="Configuration\MemcachedClientSection.cs" />
+    <Compile Include="Memcached\MemcachedException.cs" />
+    <Compile Include="Memcached\MemcachedServer.cs" />
+    <Compile Include="Memcached\Operations\ItemOperation.cs" />
+    <Compile Include="Memcached\Operations\IncrementOperation.cs" />
+    <Compile Include="Memcached\Operations\Operation.cs" />
+    <Compile Include="Memcached\PooledSocket.cs" />
+    <Compile Include="Memcached\ServerStats.cs" />
+    <Compile Include="Memcached\ThrowHelper.cs" />
+    <Compile Include="Memcached\Transcoders\CacheItem.cs" />
+    <Compile Include="Memcached\Transcoders\ITranscoder.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Memcached\ServerPool.cs" />
+    <Compile Include="Memcached\StoreMode.cs" />
+    <Compile Include="Memcached\Operations\StoreOperation.cs" />
+    <Compile Include="StatItem.cs" />
+    <Compile Include="TigerHash.cs" />
+    <Compile Include="UIntEqualityComparer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="Memcached.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="License.html" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

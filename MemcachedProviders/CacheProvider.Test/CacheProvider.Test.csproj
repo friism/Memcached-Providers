@@ -38,10 +38,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accessibility" />
-    <Reference Include="Enyim.Caching, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\EnyimMemcached\Enyim.Caching\bin\Debug\Enyim.Caching.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.core, Version=2.4.1.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files\NUnit 2.4.1\bin\nunit.core.dll</HintPath>
@@ -66,6 +62,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Enyim.Caching\Enyim.Caching.csproj">
+      <Project>{D438C0B3-A168-40B8-BDDD-61F0939DFF35}</Project>
+      <Name>Enyim.Caching</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MemcachedProviders\MemcachedProviders.csproj">
       <Project>{B062D12C-EFB7-4CB5-B560-FB2387468E82}</Project>
       <Name>MemcachedProviders</Name>
