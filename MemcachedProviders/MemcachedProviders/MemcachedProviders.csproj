@@ -73,6 +73,7 @@
     </Compile>
     <Compile Include="Session\Common.cs" />
     <Compile Include="Session\SessionStateProvider.cs" />
+    <Compile Include="Util\MemcachedModule.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resource.resx">
