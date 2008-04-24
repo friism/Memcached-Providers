@@ -451,8 +451,9 @@ namespace MemcachedProviders.Session
 
             if (obj != null)
             {
-                this._client.Store(StoreMode.Set, id, obj);
+                this._client.Store(StoreMode.Set, id, obj,new TimeSpan(0,_objConfig.Timeout.Minutes,0));
             }
+
             #endregion
 
             if (this._bIsDbNone == false) // Saving to Db

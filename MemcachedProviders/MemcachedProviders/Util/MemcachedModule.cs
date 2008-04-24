@@ -143,10 +143,13 @@ namespace MemcachedProviders.Util
             HttpApplication app = (HttpApplication)o;
             HttpContext context = app.Context;
 
+            
+
             // Don't want to cache bad stuff
             if (context.Response.StatusCode == 200 && !context.Trace.IsEnabled)
             {
                 CachingFilter cf = (CachingFilter)app.Context.Items[context_stream_filter_key];
+                
                 context.Items.Remove(context_stream_filter_key);
 
                 _client.Store(

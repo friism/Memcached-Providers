@@ -1,0 +1,7 @@
+This document describes the protocol used to create dependancies on 
+memcached entries. All commands are space separated
+Following commands are supported
+
+1. Create a file based dependancy
+
+FILE <Memcached Key> <Base 64 Representation of Network file Path> \r\n
