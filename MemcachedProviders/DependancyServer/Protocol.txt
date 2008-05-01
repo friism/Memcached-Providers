@@ -4,4 +4,6 @@ Following commands are supported
 
 1. Create a file based dependancy
 
-FILE <Memcached Key> <Base 64 Representation of Network file Path> \r\n
+FILE <Memcached Key> <Base 64 Representation of file name with extension>\r\n
+
+Server returns STORED for success and ERROR for failure.

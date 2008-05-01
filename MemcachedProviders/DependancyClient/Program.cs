@@ -11,7 +11,7 @@ namespace DependancyClient
     {
         private static readonly ArraySegment<byte> DataTerminator = new ArraySegment<byte>(new byte[2] { (byte)'\r', (byte)'\n' });
         private static Queue<TcpClient> objSocketQueue = new Queue<TcpClient>(5);
-        static int iSocketPool = 5;
+        static int iSocketPool = 1;
         private static SmartThreadPool objThread;
         private static object objLock = new object();
 
@@ -20,10 +20,10 @@ namespace DependancyClient
             for (int i = 0; i < iSocketPool; i++)
             {
                 objSocketQueue.Enqueue(new TcpClient("localhost", 5050));
-                Console.WriteLine("TcpClient Created: " + i);
+                Console.WriteLine("TCP Client Created: " + i);
             }
 
-            objThread = new SmartThreadPool(100, 10, 5);
+            objThread = new SmartThreadPool(100, 20, 5);
             objThread.Start();
 
             objThread.QueueWorkItem(new WorkItemCallback(Start));
@@ -35,7 +35,7 @@ namespace DependancyClient
 
         public static object Start(object obj)
         {
-            for (int i = 1; i <= 1250; i++)
+            for (int i = 1; i <= 2; i++)
             {
                 objThread.QueueWorkItem(new WorkItemCallback(SendItem));                
             }
@@ -82,7 +82,6 @@ namespace DependancyClient
             }
 
             string retval = Encoding.ASCII.GetString(ms.GetBuffer(), 0, (int)ms.Length);
-
             return retval;
         }
 
@@ -130,8 +129,8 @@ namespace DependancyClient
                 }
             }
             
-            string strFile = @"\\Server\Some PathSome File Name.txt";
-            string strMsg = "FILE " + DateTime.Now + " " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(strFile));
+            string strFile = "test.txt";
+            string strMsg = "FILE MyKey " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(strFile));
             // Translate the passed message into ASCII and store it as a Byte array.
 
             byte[] data = System.Text.Encoding.ASCII.GetBytes(strMsg);

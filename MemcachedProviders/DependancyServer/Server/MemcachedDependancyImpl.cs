@@ -9,103 +9,75 @@ using Amib.Threading;
 
 namespace DependancyServer.Server
 {
-    public class MemcachedDependancyImpl : IDependancyServer
+    internal class MemcachedDependancyImpl : IDependancyServer
     {
+        #region Class members
         private TcpListener _objListener;
         private LinkedList<IMemcachedDependancy> _objDependancy;
-        private object _object = new object();
+        private object objLock = new object();
+        private object objMemcachedDependancyLock = new object();
+        private FileSystemWatcher _objFileSystemWatcher;
         private SmartThreadPool _objThreadPool;
         private Queue<TcpClient> _objClientQueue;
-        private object objLock = new object();
+        private IDictionary<string, IMemcachedDependancy> _objMemcachedDependancy;
+        public IDictionary<string, IMemcachedDependancy> MemcachedDependancy
+        {
+            get { return _objMemcachedDependancy; }
+        }
+        #endregion
 
+        #region File events
+        void _objFileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
+        {
+            Console.WriteLine("File deleted: " + e.FullPath);
+        }
+
+        void _objFileSystemWatcher_Renamed(object sender, RenamedEventArgs e)
+        {
+            Console.WriteLine("File name changed:" + e.FullPath);
+        }
+
+        void _objFileSystemWatcher_Error(object sender, ErrorEventArgs e)
+        {
+            Console.WriteLine("Error File: ");
+        }
+
+        void _objFileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            Console.WriteLine("Changed File: " + e.FullPath + " ------- " + e.ChangeType + " ---- " + e.Name);
+            this._objThreadPool.QueueWorkItem(new WorkItemCallback(ProcessFileEvent), e.Name);
+        }
+
+        #endregion
+
+        #region Constructor
         public MemcachedDependancyImpl()
         {
-            this._objListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 5050);
+            this._objListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 
+                int.Parse(System.Configuration.ConfigurationManager.AppSettings["port"]));
             this._objDependancy = new LinkedList<IMemcachedDependancy>();
-            this._objThreadPool = new SmartThreadPool(100,100,1);
+            this._objThreadPool = new SmartThreadPool(100, 5, 1);
             this._objClientQueue = new Queue<TcpClient>();
+            this._objMemcachedDependancy = new Dictionary<string, IMemcachedDependancy>();
         }
+        #endregion
 
-        protected object StartListener(object obj)
-        {            
-            this._objListener.Start();
-            Console.WriteLine("Server Starting....");
-
-            while (true)
-            {
-                Console.WriteLine("Server is listening...");
-                TcpClient objClient = this._objListener.AcceptTcpClient();
-
-                lock (objLock)
-                {
-                    this._objClientQueue.Enqueue(objClient);
-                }
-
-                Console.WriteLine("Calling a WorkItemCallback ProcessRequest");
-                this._objThreadPool.QueueWorkItem(new WorkItemCallback(ProcessRequest));
-            }           
-        }
-
-        protected object ProcessRequest(object obj)
+        #region TCP/IP request response functions
+        private void SendErrorMessage(NetworkStream objStream)
         {
-            Console.WriteLine("Processing TCP Client...");
-            Console.WriteLine();
+            ArraySegment<byte> objResponse = GetCommandBuffer("ERROR");
+            Write(objResponse.Array, objResponse.Offset, objResponse.Count, objStream);
 
-            byte[] objData = new byte[256];
-            TcpClient objClient = null;
-
-            while (true)
-            {
-                if (this._objClientQueue.Count > 0)
-                {
-                    lock (objLock)
-                    {
-                        if (this._objClientQueue.Count > 0)
-                        {
-                            objClient = this._objClientQueue.Dequeue();
-
-                            if (objClient.Connected == true)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-                }
-                else
-                {
-                    Thread.Sleep(DateTime.Now.Millisecond); // get a random number
-                }
-            }
-
-            NetworkStream objStream = objClient.GetStream();
-            string str = string.Empty;
-            
-            while (!string.IsNullOrEmpty(str = this.ReadLine(objStream)))
-            {                
-                Thread.Sleep(200);
-                try
-                {
-                    Console.WriteLine("Thread " + Thread.CurrentThread.ManagedThreadId + ": " + str);
-                    Write(GetCommandBuffer("STORED").Array, GetCommandBuffer("STORED").Offset, GetCommandBuffer("STORED").Count,
-                        objStream);
-                    Console.WriteLine("Sending response....");
-                    objStream.Flush();
-                    Console.WriteLine();
-                    Console.WriteLine("Waiting.....");
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-
-            return null;
+            Console.WriteLine("Sending Error response....");
         }
 
+        private void SendSuccessMessage(NetworkStream objStream)
+        {
+            ArraySegment<byte> objResponse = GetCommandBuffer("STORED");
+            Write(objResponse.Array, objResponse.Offset,objResponse.Count, objStream);
+            Console.WriteLine("Sending Success response....");
+        }
+                
         public static ArraySegment<byte> GetCommandBuffer(string value)
         {
             int valueLength = value.Length;
@@ -166,14 +138,199 @@ namespace DependancyServer.Server
 
             return retval;
         }
+        #endregion
+
+        #region WorkItemCallback methods
+
+        /// <summary>
+        /// This function processes any file changes in the specified directory
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        protected object ProcessFileEvent(object obj)
+        {
+            string strFileName = (string)obj;
+
+            // Lock the queue for processing
+            lock (objMemcachedDependancyLock)
+            {
+                if (this._objMemcachedDependancy.ContainsKey(strFileName) == true)
+                {
+                    IMemcachedDependancy objDependancy = this._objMemcachedDependancy[strFileName];
+
+                    //remove the following from memcached
+                    Console.WriteLine("Memcached Key {0} removed", objDependancy.DependancyKey);
+                    this._objMemcachedDependancy.Remove(strFileName);
+                    Console.WriteLine("Item removed from Process Queue");
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// This functions constantly check for new requests
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        protected object CheckForRequest(object obj)
+        {
+            Console.WriteLine("Checking TCP Client...");
+            Console.WriteLine();
+
+            byte[] objData = new byte[1024];
+            TcpClient objClient = null;
+
+            while (true)
+            {
+                if (this._objClientQueue.Count > 0)
+                {
+                    lock (objLock)
+                    {
+                        if (this._objClientQueue.Count > 0)
+                        {
+                            objClient = this._objClientQueue.Dequeue();
+
+                            if ((objClient.Connected == true))
+                            {
+                                if (objClient.Available > 0)
+                                {
+                                    this._objThreadPool.QueueWorkItem(new WorkItemCallback(ProcessDependancyRequest), objClient, WorkItemPriority.Highest);
+                                }
+                                else
+                                {
+                                    this._objClientQueue.Enqueue(objClient);
+                                    Thread.Sleep(DateTime.Now.Millisecond); // get a random number
+                                }
+                            }
+                            // if the socket is not connected it just removes it from the queue
+                        }
+                        else
+                        {
+                            Thread.Sleep(DateTime.Now.Millisecond); // get a random number
+                            continue;
+                        }
+                    }
+                }
+                else
+                {
+                    //Console.WriteLine("Putting Thread to Sleep.......");
+                    Thread.Sleep(DateTime.Now.Millisecond); // get a random number
+                }
+            }
+        }
+
+        /// <summary>
+        /// Processes client request
+        /// </summary>
+        /// <param name="obj">null</param>
+        /// <returns>null</returns>
+        protected object ProcessDependancyRequest(object obj)
+        {
+            #region Processing Request
+            TcpClient objClient = (TcpClient)obj;
+            NetworkStream objStream = objClient.GetStream();
+            string str = string.Empty;
+
+            try
+            {
+                str = this.ReadLine(objStream);
+
+                try
+                {
+                    bool bResult = false;
+
+                    // Obtaining locks and executing the request
+                    lock (objMemcachedDependancyLock)
+                    {
+                        bResult = DependancyParser.ProcessCommand(str, this._objMemcachedDependancy);
+                    }
+
+                    if (bResult == true)
+                    {
+                        SendSuccessMessage(objStream);
+                    }
+                    else
+                    {
+                        SendErrorMessage(objStream);
+                    }
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine(err);
+                    SendErrorMessage(objStream);
+                }
+
+                objStream.Flush();
+
+                Console.WriteLine();
+                Console.WriteLine("Putting the TCP client back in queue.....");
+
+                lock (objLock)
+                {
+                    this._objClientQueue.Enqueue(objClient);
+                }
+            }
+            catch (Exception err)
+            {
+                Console.WriteLine("Exception occured....connection closed: " + err);
+            }
+            #endregion
+
+            return null;
+        }
+
+        /// <summary>
+        /// Initializes and starts the server
+        /// </summary>
+        /// <param name="obj">null</param>
+        /// <returns>null</returns>
+        protected object StartListener(object obj)
+        {
+            // Start the TCP/IP server
+            this._objListener.Start();
+            Console.WriteLine("Server Starting....port:" + System.Configuration.ConfigurationManager.AppSettings["port"]);
+
+            #region Creating filesystem watcher
+            this._objFileSystemWatcher = new FileSystemWatcher(System.Configuration.ConfigurationManager.AppSettings["directory"]);
+            this._objFileSystemWatcher.Filter = System.Configuration.ConfigurationManager.AppSettings["fileTypeToMonitor"];
+            this._objFileSystemWatcher.EnableRaisingEvents = true;
+            this._objFileSystemWatcher.IncludeSubdirectories = false;
+            this._objFileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
+
+            this._objFileSystemWatcher.Changed += new FileSystemEventHandler(_objFileSystemWatcher_Changed);
+            this._objFileSystemWatcher.Error += new ErrorEventHandler(_objFileSystemWatcher_Error);
+            this._objFileSystemWatcher.Renamed += new RenamedEventHandler(_objFileSystemWatcher_Renamed);
+            this._objFileSystemWatcher.Deleted += new FileSystemEventHandler(_objFileSystemWatcher_Deleted);
+            #endregion
+
+            // Create a thread that constantly monitors the sockets if they have data
+            this._objThreadPool.QueueWorkItem(new WorkItemCallback(CheckForRequest));
+
+            while (true)
+            {
+                Console.WriteLine("Server is listening for client connections...");
+                TcpClient objClient = this._objListener.AcceptTcpClient();
+
+                // Locks the socket queue to add new connection
+                lock (objLock)
+                {
+                    objClient.ReceiveTimeout = int.Parse(System.Configuration.ConfigurationManager.AppSettings["socketKeepAliveTime"]); //Timeout
+                    this._objClientQueue.Enqueue(objClient);
+                    Console.WriteLine("TCP Client count: " + this._objClientQueue.Count);
+                }
+            }
+        }
+
+        #endregion
 
         #region IDependancyServer Members
 
         public void Start()
         {
             this._objThreadPool.Start();
-            this._objThreadPool.QueueWorkItem(new WorkItemCallback(StartListener),null);
-        }       
+            this._objThreadPool.QueueWorkItem(new WorkItemCallback(StartListener), null);
+        }
 
         public void Stop()
         {
@@ -189,9 +346,8 @@ namespace DependancyServer.Server
         {
             this._objDependancy.Clear();
             this._objListener = null;
-            this._object = null;
         }
 
-        #endregion       
+        #endregion
     }
 }
