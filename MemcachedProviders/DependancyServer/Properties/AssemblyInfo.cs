@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SocketServer")]
+[assembly: AssemblyTitle("Dependancy Server")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("CMMS data group")]
-[assembly: AssemblyProduct("SocketServer")]
-[assembly: AssemblyCopyright("Copyright © CMMS data group 2008")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Dependancy Server")]
+[assembly: AssemblyCopyright("Copyright © fahadaz@gmail.com 2008")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,5 +29,4 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.2.*")]
