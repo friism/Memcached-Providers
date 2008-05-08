@@ -81,31 +81,41 @@ namespace DependancyServer.Server
 {
     internal static class DependancyParser
     {
-        
-        public static bool ProcessCommand(string strCommnd, IDictionary<string, IMemcachedDependancy> objMemcached)        
+        public static IMemcachedDependancy ProcessCommand(string strCommnd)
         {
             string[] str = strCommnd.Split(' ');
 
             if (str[0].ToUpper() == "FILE")
             {
                 // Convert the filename from Base64 string
-                string strFileName = System.Text.ASCIIEncoding.ASCII.GetString(Convert.FromBase64String(str[2]));
+                string strFileName = System.Text.ASCIIEncoding.ASCII.GetString(Convert.FromBase64String(str[1]));
+                string[] strKeys = new string[str.Length - 2];
 
-                // Check if the key does not exists create it otherwise just replace
-                if (objMemcached.ContainsKey(strFileName) == false)
+                for (int i = 2; i < str.Length; i++)
                 {
-                    objMemcached.Add(strFileName, new FileMemcachedDependancy(str[1], strFileName));
-                }
-                else
-                {
-                    objMemcached[strFileName] = new FileMemcachedDependancy(str[1], strFileName);
+                    strKeys[i - 2] = str[i];
                 }
 
-                return true;                
+                return new FileMemcachedDependancy(strFileName, strKeys);
             }
 
-            return false;
+            #region Comments
+            //else if(str[0].ToUpper() == "KEY")
+            //{                
+            //    string[] strKeys = new string[str.Length - 2];
+            //    string strKeyToMonitor = str[1];
+
+            //    for (int i = 2; i < str.Length; i++)
+            //    {
+            //        strKeys[i - 2] = str[i];
+            //    }
+
+            //    return new KeyMemcachedDependancy(strKeyToMonitor, strKeys);  
+            //}
+            #endregion
+
+            return null;
         }
-        
-    }
+
+    }   
 }

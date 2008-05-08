@@ -85,19 +85,19 @@ namespace DependancyServer.Server
 {
     internal class MemcachedDependancyImpl : IDependancyServer
     {
-        #region Class members
+        #region Class members and properties
         private TcpListener _objListener;
         private LinkedList<IMemcachedDependancy> _objDependancy;
-        private object objLock = new object();
-        private object objMemcachedDependancyLock = new object();
+        private object _objSocketLock = new object();
+        private object _objMemDepFileLock = new object();
+        private object _objMemDepKeyLock = new object();
         private FileSystemWatcher _objFileSystemWatcher;
         private SmartThreadPool _objThreadPool;
-        private Queue<TcpClient> _objClientQueue;
-        private IDictionary<string, IMemcachedDependancy> _objMemcachedDependancy;
-        public IDictionary<string, IMemcachedDependancy> MemcachedDependancy
-        {
-            get { return _objMemcachedDependancy; }
-        }
+        private Queue<PooledTcpClient> _objClientQueue;
+        private IDictionary<string, IMemcachedDependancy> _objMemDepFile;
+        private readonly int _iCounterLimit = int.Parse(System.Configuration.ConfigurationManager.AppSettings["counterToExpire"]);
+        //private IDictionary<string, IMemcachedDependancy> _objMemDepKey;
+        //private System.Timers.Timer _objTimer;        
         #endregion
 
         #region File events
@@ -124,16 +124,49 @@ namespace DependancyServer.Server
 
         #endregion
 
+        #region Timer Events
+
+        //void _objTimer_Elapsed(object sender, ElapsedEventArgs e)
+        //{
+        //    Console.WriteLine("Event Called: "+ e.SignalTime);
+
+        //    lock (this._objMemDepKeyLock)
+        //    {
+        //        Console.WriteLine("/***---------------Size of Key Queue: {0}------------------***/", _objMemDepKey.Count);
+
+        //        foreach (IMemcachedDependancy obj in _objMemDepKey.Values)
+        //        {
+        //            this._objThreadPool.QueueWorkItem(new WorkItemCallback(ProcessKeyEvent),obj.Clone(),WorkItemPriority.AboveNormal); 
+        //        }
+        //    }
+        //}
+
+        #endregion
+
         #region Constructor
+
         public MemcachedDependancyImpl()
         {
-            this._objListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 
+            this._objListener = new TcpListener(IPAddress.Parse(System.Configuration.ConfigurationManager.AppSettings["ip"]),
                 int.Parse(System.Configuration.ConfigurationManager.AppSettings["port"]));
             this._objDependancy = new LinkedList<IMemcachedDependancy>();
-            this._objThreadPool = new SmartThreadPool(100, 5, 1);
-            this._objClientQueue = new Queue<TcpClient>();
-            this._objMemcachedDependancy = new Dictionary<string, IMemcachedDependancy>();
+            this._objThreadPool =
+                new SmartThreadPool(
+                    int.Parse(System.Configuration.ConfigurationManager.AppSettings["threadIdleTime"]),
+                    int.Parse(System.Configuration.ConfigurationManager.AppSettings["maxThreads"]),
+                    int.Parse(System.Configuration.ConfigurationManager.AppSettings["minThreads"]));
+            this._objClientQueue = new Queue<PooledTcpClient>();
+            this._objMemDepFile = new Dictionary<string, IMemcachedDependancy>();
+            //this._objMemDepKey = new Dictionary<string, IMemcachedDependancy>();
+
+            #region Comments
+            //this._objTimer = new System.Timers.Timer();
+            //this._objTimer.Interval = int.Parse(System.Configuration.ConfigurationManager.AppSettings["keyTimeoutPoolValue"]);
+            //this._objTimer.Elapsed += new ElapsedEventHandler(_objTimer_Elapsed);
+            //this._objTimer.Enabled = true;
+            #endregion
         }
+
         #endregion
 
         #region TCP/IP request response functions
@@ -148,10 +181,10 @@ namespace DependancyServer.Server
         private void SendSuccessMessage(NetworkStream objStream)
         {
             ArraySegment<byte> objResponse = GetCommandBuffer("STORED");
-            Write(objResponse.Array, objResponse.Offset,objResponse.Count, objStream);
+            Write(objResponse.Array, objResponse.Offset, objResponse.Count, objStream);
             Console.WriteLine("Sending Success response....");
         }
-                
+
         public static ArraySegment<byte> GetCommandBuffer(string value)
         {
             int valueLength = value.Length;
@@ -224,18 +257,25 @@ namespace DependancyServer.Server
         protected object ProcessFileEvent(object obj)
         {
             string strFileName = (string)obj;
+            IMemcachedDependancy objDependancy = null;
 
             // Lock the queue for processing
-            lock (objMemcachedDependancyLock)
+            lock (_objMemDepFileLock)
             {
-                if (this._objMemcachedDependancy.ContainsKey(strFileName) == true)
+                if (this._objMemDepFile.ContainsKey(strFileName) == true)
                 {
-                    IMemcachedDependancy objDependancy = this._objMemcachedDependancy[strFileName];
+                    objDependancy = this._objMemDepFile[strFileName];
 
-                    //remove the following from memcached
-                    Console.WriteLine("Memcached Key {0} removed", objDependancy.DependancyKey);
-                    this._objMemcachedDependancy.Remove(strFileName);
-                    Console.WriteLine("Item removed from Process Queue");
+                    this._objMemDepFile.Remove(strFileName);
+                    Console.WriteLine("Item removed from Process Queue...");
+                }
+            }
+
+            if (objDependancy != null)
+            {
+                foreach (string str in objDependancy.DependancyKeys)
+                {
+                    Console.WriteLine("Memcached Key {0} removed...", str);
                 }
             }
 
@@ -254,18 +294,27 @@ namespace DependancyServer.Server
 
             byte[] objData = new byte[1024];
             TcpClient objClient = null;
+            PooledTcpClient objPoolClient = null;
 
             while (true)
             {
                 if (this._objClientQueue.Count > 0)
                 {
-                    lock (objLock)
+                    lock (_objSocketLock)
                     {
+                        Console.WriteLine("/--------------------Size of Socket Queue: {0}--------------------------/", this._objClientQueue.Count);
                         if (this._objClientQueue.Count > 0)
                         {
-                            objClient = this._objClientQueue.Dequeue();
+                            objPoolClient = this._objClientQueue.Dequeue();
+                            objClient = objPoolClient.TCPClient;
 
-                            if ((objClient.Connected == true))
+                            if (objPoolClient.CanCloseClient() == true) // we can remove this socket
+                            {
+                                continue;
+                            }
+
+
+                            if ((objClient.Client.Connected == true))
                             {
                                 if (objClient.Available > 0)
                                 {
@@ -273,15 +322,15 @@ namespace DependancyServer.Server
                                 }
                                 else
                                 {
-                                    this._objClientQueue.Enqueue(objClient);
-                                    Thread.Sleep(DateTime.Now.Millisecond); // get a random number
+                                    objPoolClient.Increment();
+                                    this._objClientQueue.Enqueue(objPoolClient);
+                                    Thread.Sleep(RandomSleep()); // get a random number
                                 }
                             }
-                            // if the socket is not connected it just removes it from the queue
                         }
                         else
                         {
-                            Thread.Sleep(DateTime.Now.Millisecond); // get a random number
+                            Thread.Sleep(RandomSleep()); // get a random number
                             continue;
                         }
                     }
@@ -289,7 +338,7 @@ namespace DependancyServer.Server
                 else
                 {
                     //Console.WriteLine("Putting Thread to Sleep.......");
-                    Thread.Sleep(DateTime.Now.Millisecond); // get a random number
+                    Thread.Sleep(RandomSleep()); // get a random number
                 }
             }
         }
@@ -314,11 +363,46 @@ namespace DependancyServer.Server
                 {
                     bool bResult = false;
 
-                    // Obtaining locks and executing the request
-                    lock (objMemcachedDependancyLock)
+                    IMemcachedDependancy objDep = DependancyParser.ProcessCommand(str);
+
+                    if (objDep == null)
+                        throw new Exception();
+
+                    if (objDep.Type == MemcachedDependancy.File)
                     {
-                        bResult = DependancyParser.ProcessCommand(str, this._objMemcachedDependancy);
+                        lock (_objMemDepFileLock)
+                        {
+                            if (this._objMemDepFile.ContainsKey(objDep.KeyToIndex) == false)
+                            {
+                                this._objMemDepFile.Add(objDep.KeyToIndex, objDep);
+                            }
+                            else
+                            {
+                                this._objMemDepFile[objDep.KeyToIndex] = objDep;
+                            }
+
+                            bResult = true;
+                        }
                     }
+
+                    #region Comments
+                    //else if(objDep.Type == MemcachedDependancy.OtherKey)
+                    //{
+                    //    lock (_objMemDepKeyLock)
+                    //    {
+                    //        if (this._objMemDepKey.ContainsKey(objDep.KeyToIndex) == false)
+                    //        {
+                    //            this._objMemDepKey.Add(objDep.KeyToIndex, objDep);
+                    //        }
+                    //        else
+                    //        {
+                    //            this._objMemDepKey[objDep.KeyToIndex] = objDep;
+                    //        }
+
+                    //        bResult = true;
+                    //    } 
+                    //}
+                    #endregion
 
                     if (bResult == true)
                     {
@@ -333,6 +417,7 @@ namespace DependancyServer.Server
                 {
                     Console.WriteLine(err);
                     SendErrorMessage(objStream);
+                    throw;
                 }
 
                 objStream.Flush();
@@ -340,9 +425,9 @@ namespace DependancyServer.Server
                 Console.WriteLine();
                 Console.WriteLine("Putting the TCP client back in queue.....");
 
-                lock (objLock)
+                lock (_objSocketLock)
                 {
-                    this._objClientQueue.Enqueue(objClient);
+                    this._objClientQueue.Enqueue(new PooledTcpClient(objClient, this._iCounterLimit));
                 }
             }
             catch (Exception err)
@@ -387,13 +472,49 @@ namespace DependancyServer.Server
                 TcpClient objClient = this._objListener.AcceptTcpClient();
 
                 // Locks the socket queue to add new connection
-                lock (objLock)
+                lock (_objSocketLock)
                 {
                     objClient.ReceiveTimeout = int.Parse(System.Configuration.ConfigurationManager.AppSettings["socketKeepAliveTime"]); //Timeout
-                    this._objClientQueue.Enqueue(objClient);
+                    this._objClientQueue.Enqueue(new PooledTcpClient(objClient, this._iCounterLimit));
                     Console.WriteLine("TCP Client count: " + this._objClientQueue.Count);
                 }
             }
+        }
+
+        #region Comments
+        /// <summary>
+        /// This function processes Key polling WorkItemCallback
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        //protected object ProcessKeyEvent(object obj)
+        //{
+        //    IMemcachedDependancy objKeyDep = (IMemcachedDependancy)obj;
+
+        //    Console.WriteLine("------------------------{0}------------------------" , DateTime.Now);
+        //    Console.WriteLine("Key expired: "+ objKeyDep.KeyToIndex);
+
+        //    foreach (string str in objKeyDep.DependancyKeys)
+        //    {
+        //        Console.WriteLine("Dependanct Key: "+ str);
+        //    }
+
+        //    lock (this._objMemDepKey)
+        //    {
+        //        this._objMemDepKey.Remove(objKeyDep.KeyToIndex);
+        //    }
+
+        //    return null;
+        //}
+        #endregion
+
+        /// <summary>
+        /// This function gets a random number between 250 and 750
+        /// </summary>
+        /// <returns>int</returns>
+        protected int RandomSleep()
+        {
+            return (new System.Random()).Next(250, 750);
         }
 
         #endregion

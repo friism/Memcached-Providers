@@ -80,23 +80,29 @@ using System.Security;
 
 namespace DependancyServer.Server
 {
-    
-    public interface IMemcachedDependancy : IDisposable
+
+    public interface IMemcachedDependancy : IDisposable, ICloneable
     {
-        MemcachedDependancy Type { get;}
-        string DependancyKey { get;}
+        MemcachedDependancy Type { get; }
+        IList<string> DependancyKeys { get; }
+        string KeyToIndex { get; }
     }
-        
+
     internal class FileMemcachedDependancy : IMemcachedDependancy
     {
-        private string _strDependancyKey;
         private string _strFilePath;
-                
-        public FileMemcachedDependancy(string strDependancyKey, string strFilePath)
+        private IList<string> _objKeyCollection;
+
+        public FileMemcachedDependancy(string strFilePath, params string[] strDependancyKey)
         {
-            this._strDependancyKey = strDependancyKey;            
             this._strFilePath = strFilePath;
-        }       
+            this._objKeyCollection = new List<string>();
+
+            foreach (string str in strDependancyKey)
+            {
+                this._objKeyCollection.Add(str);
+            }
+        }
 
         #region IMemcachedDependancy Members
 
@@ -105,21 +111,91 @@ namespace DependancyServer.Server
             get { return MemcachedDependancy.File; }
         }
 
-        public string DependancyKey
+        public IList<string> DependancyKeys
         {
-            get { return this._strDependancyKey; }
+            get { return this._objKeyCollection; }
         }
-               
+
+        public string KeyToIndex
+        {
+            get { return this._strFilePath; }
+        }
+
         #endregion
 
         #region IDisposable Members
 
         public void Dispose()
-        {            
+        {
+        }
+
+        #endregion
+
+        #region ICloneable Members
+
+        public object Clone()
+        {
+            string[] strDepKeys = ((List<string>)this._objKeyCollection).ToArray();
+            return new FileMemcachedDependancy(_strFilePath, strDepKeys);
         }
 
         #endregion
     }
 
-    public enum MemcachedDependancy { File = 0, Sql2005 = 1, OtherKey = 2};
+    internal class KeyMemcachedDependancy : IMemcachedDependancy
+    {
+        private string _strKeyToMonitor;
+        private IList<string> _objKeyCollection;
+
+        public KeyMemcachedDependancy(string strKeyToMonitor, params string[] strDependancyKey)
+        {
+            this._strKeyToMonitor = strKeyToMonitor;
+            this._objKeyCollection = new List<string>();
+
+            foreach (string str in strDependancyKey)
+            {
+                this._objKeyCollection.Add(str);
+            }
+        }
+
+        #region IMemcachedDependancy Members
+
+        public MemcachedDependancy Type
+        {
+            get { return MemcachedDependancy.OtherKey; }
+        }
+
+        public IList<string> DependancyKeys
+        {
+            get { return this._objKeyCollection; }
+        }
+
+        public string KeyToIndex
+        {
+            get { return this._strKeyToMonitor; }
+        }
+
+        #endregion
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+
+        }
+
+        #endregion
+
+        #region ICloneable Members
+
+        public object Clone()
+        {
+            string[] strDepKeys = ((List<string>)this._objKeyCollection).ToArray();
+            return new KeyMemcachedDependancy(_strKeyToMonitor, strDepKeys);
+        }
+
+        #endregion
+    }
+
+    public enum MemcachedDependancy { File = 0, Sql2005 = 1, OtherKey = 2 };
 }

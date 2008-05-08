@@ -76,157 +76,47 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net.Sockets;
-using System.IO;
-using Amib.Threading;
 
-namespace DependancyClient
+namespace DependancyServer.Server
 {
-    public class Program
+    internal class PooledTcpClient
     {
-        private static readonly ArraySegment<byte> DataTerminator = new ArraySegment<byte>(new byte[2] { (byte)'\r', (byte)'\n' });
-        private static Queue<TcpClient> objSocketQueue = new Queue<TcpClient>(5);
-        static int iSocketPool = 10;
-        private static SmartThreadPool objThread;
-        private static object objLock = new object();
+        private TcpClient _objTCPClient;
+        private int _iCounter;
+        private int _iLimit;
 
-        public static void Main(string[] args)
+        public PooledTcpClient(TcpClient objTCPClient, int iLimit)
         {
-            for (int i = 0; i < iSocketPool; i++)
-            {
-                objSocketQueue.Enqueue(new TcpClient("localhost", 5050));
-                Console.WriteLine("TCP Client Created: " + i);
-            }
-
-            objThread = new SmartThreadPool(100, 20, 5);
-            objThread.Start();
-
-            objThread.QueueWorkItem(new WorkItemCallback(Start));
-
-            Console.ReadLine();
-
-            objThread.Shutdown();
+            this._iCounter = 0;
+            this._iLimit = iLimit;
+            this._objTCPClient = objTCPClient;
         }
 
-        public static object Start(object obj)
+        public TcpClient TCPClient
         {
-            for (int i = 1; i <= 1000; i++)
-            {
-                objThread.QueueWorkItem(new WorkItemCallback(SendItem));
-            }
+            get { return _objTCPClient; }
+            set { _objTCPClient = value; }
+        }        
 
-            return null;
+        public int Counter
+        {
+            get { return _iCounter; }
+            set { _iCounter = value; }
         }
 
-        private static string ReadLine(NetworkStream inputStream)
+        public void Increment()
         {
-            MemoryStream ms = new MemoryStream(50);
-
-            bool gotR = false;
-            byte[] buffer = new byte[1];
-
-            int data;
-
-            try
-            {
-                while (true)
-                {
-                    data = inputStream.ReadByte();
-                    if (data == 13)
-                    {
-                        gotR = true;
-                        continue;
-                    }
-
-                    if (gotR)
-                    {
-                        if (data == 10)
-                            break;
-
-                        ms.WriteByte(13);
-
-                        gotR = false;
-                    }
-
-                    ms.WriteByte((byte)data);
-                }
-            }
-            catch (IOException)
-            {
-                throw;
-            }
-
-            string retval = Encoding.ASCII.GetString(ms.GetBuffer(), 0, (int)ms.Length);
-            return retval;
+            this._iCounter++;
         }
 
-        public static ArraySegment<byte> GetCommandBuffer(string value)
+        public void ResetCounter()
         {
-            int valueLength = value.Length;
-            byte[] data = new byte[valueLength + 2];
-
-            Encoding.ASCII.GetBytes(value, 0, valueLength, data, 0);
-
-            data[valueLength] = 13;
-            data[valueLength + 1] = 10;
-
-            return new ArraySegment<byte>(data);
+            this._iCounter = 0;
         }
 
-        public static object SendItem(object obj)
+        public bool CanCloseClient()
         {
-            TcpClient objClient = null;
-
-            while (true)
-            {
-                if (objSocketQueue.Count > 0)
-                {
-                    Console.WriteLine("Dequeuing....");
-
-                    lock (objLock)
-                    {
-                        if (objSocketQueue.Count > 0)
-                        {
-                            objClient = objSocketQueue.Dequeue();
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-
-                    Console.WriteLine("Got TCP Client.....");
-                    break;
-                }
-                else
-                {
-                    System.Threading.Thread.Sleep(DateTime.Now.Millisecond);
-                }
-            }
-
-            string strFile = "test.txt";
-            string strMsg = "FILE " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(strFile)) + " FirstKey SecondKey ThirdKey";
-            //string strMsg = "KEY KeyToMonitor"+ DateTime.Now.Millisecond +" FirstKey SecondKey ThirdKey";
-            // Translate the passed message into ASCII and store it as a Byte array.
-
-            byte[] data = System.Text.Encoding.ASCII.GetBytes(strMsg);
-
-            NetworkStream stream = objClient.GetStream();
-
-            // Send the message to the connected TcpServer. 
-            ArraySegment<byte> objData = GetCommandBuffer(strMsg);
-            stream.Write(objData.Array, objData.Offset, objData.Count);
-            stream.Flush();
-
-            Console.WriteLine("Trying to read...");
-            Console.WriteLine(ReadLine(stream) + " " + DateTime.Now);
-
-
-            lock (objLock)
-            {
-                objSocketQueue.Enqueue(objClient);
-            }
-
-            return null;
+            return this._iCounter >= this._iLimit; 
         }
     }
 }

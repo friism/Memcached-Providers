@@ -65,6 +65,7 @@
     <Compile Include="Server\IDependancyServer.cs" />
     <Compile Include="Server\IMemcachedDependancy.cs" />
     <Compile Include="Server\MemcachedDependancyImpl.cs" />
+    <Compile Include="Server\PooledTcpClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Protocol.txt" />
