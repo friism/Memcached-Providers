@@ -80,6 +80,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using Amib.Threading;
+using Enyim.Caching;
 
 namespace DependancyServer.Server
 {
@@ -96,6 +97,7 @@ namespace DependancyServer.Server
         private Queue<PooledTcpClient> _objClientQueue;
         private IDictionary<string, IMemcachedDependancy> _objMemDepFile;
         private readonly int _iCounterLimit = int.Parse(System.Configuration.ConfigurationManager.AppSettings["counterToExpire"]);
+        private static readonly MemcachedClient _objMemcachedClient = new MemcachedClient();
         //private IDictionary<string, IMemcachedDependancy> _objMemDepKey;
         //private System.Timers.Timer _objTimer;        
         #endregion
@@ -275,6 +277,8 @@ namespace DependancyServer.Server
             {
                 foreach (string str in objDependancy.DependancyKeys)
                 {
+                    // Removing Key from memcached
+                    _objMemcachedClient.Remove(str);
                     Console.WriteLine("Memcached Key {0} removed...", str);
                 }
             }
@@ -302,7 +306,7 @@ namespace DependancyServer.Server
                 {
                     lock (_objSocketLock)
                     {
-                        Console.WriteLine("/--------------------Size of Socket Queue: {0}--------------------------/", this._objClientQueue.Count);
+                        //Console.WriteLine("/--------------------Size of Socket Queue: {0}--------------------------/", this._objClientQueue.Count);
                         if (this._objClientQueue.Count > 0)
                         {
                             objPoolClient = this._objClientQueue.Dequeue();
