@@ -26,7 +26,7 @@ namespace Enyim.Caching.Memcached
 			// {normal key -> hashed key}: we have to hash all keys anyway, so we better cache them to improve performance instead of doing the hashing later again
 			Dictionary<string, string> realToHashed = new Dictionary<string, string>(StringComparer.Ordinal);
 
-			IKeyTransformer transformer = this.ServerPool.KeyTransformer;
+			IMemcachedKeyTransformer transformer = this.ServerPool.KeyTransformer;
 
 			// and store them with the originals so we can map the returned items 
 			// to the original keys
@@ -62,6 +62,9 @@ namespace Enyim.Caching.Memcached
 						command[i] = realToHashed[command[i]];
 
 					PooledSocket socket = kp.Key.Acquire();
+					if (socket == null)
+						continue;
+
 					sockets.Add(socket);
 					socket.SendCommand(String.Join(" ", command));
 				}

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("enyim.com")]
 [assembly: AssemblyProduct("Enyim.Caching")]
-[assembly: AssemblyCopyright("Copyright © enyim.com 2007")]
+[assembly: AssemblyCopyright("Copyright © enyim.com 2007-2008")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -15,8 +15,8 @@ using System.Runtime.InteropServices;
 
 [assembly: Guid("a8cd3f39-7731-4ee8-a7ce-444d540d4a4d")]
 
-[assembly: AssemblyVersion("1.0.6.0")]
-[assembly: AssemblyFileVersion("1.0.6.0")]
+[assembly: AssemblyVersion("1.2.0.0")]
+[assembly: AssemblyFileVersion("1.2.0.0")]
 
 #if SIGN
 [assembly: AssemblyKeyName("enyim")]

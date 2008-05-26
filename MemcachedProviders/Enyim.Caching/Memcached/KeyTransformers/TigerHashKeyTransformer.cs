@@ -2,18 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Enyim.Reflection
+namespace Enyim.Caching.Memcached
 {
 	/// <summary>
-	/// This interface supports the <see cref="T:FastActivator"/> and is not intended to be used directly from your code.
+	/// A key transformer which converts the item keys into their Tiger hash.
 	/// </summary>
-	public interface IFastObjectFacory
+	public sealed class TigerHashKeyTransformer : IMemcachedKeyTransformer
 	{
-		/// <summary>
-		/// This method supports the <see cref="T:FastActivator"/> and is not intended to be used directly from your code.
-		/// </summary>
-		/// <returns></returns>
-		object CreateInstance();
+		string IMemcachedKeyTransformer.Transform(string key)
+		{
+			TigerHash th = new TigerHash();
+			byte[] data = th.ComputeHash(Encoding.Unicode.GetBytes(key));
+
+			return Convert.ToBase64String(data, Base64FormattingOptions.None);
+		}
 	}
 }
 

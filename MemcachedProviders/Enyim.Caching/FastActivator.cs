@@ -23,6 +23,11 @@ namespace Enyim.Reflection
 		private const MethodAttributes DefaultMethodAttrs = MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot | MethodAttributes.SpecialName | MethodAttributes.Final;
 		private static long counter = 1;
 
+		/// <summary>
+		/// Creates an instance of the specified type using a generated factory to avoid using Reflection.
+		/// </summary>
+		/// <param name="type">The type to be created</param>
+		/// <returns>The newly created instance.</returns>
 		public static object CreateInstance(Type type)
 		{
 			if (type.IsNotPublic)
@@ -35,6 +40,11 @@ namespace Enyim.Reflection
 			return GetFactory(type).CreateInstance();
 		}
 
+		/// <summary>
+		/// Creates an instance of the type designated by the specified generic type parameter using a generated factory to avoid using Reflection.
+		/// </summary>
+		/// <typeparam name="T">The type to be created.</typeparam>
+		/// <returns>The newly created instance.</returns>
 		public static T CreateInstance<T>() where T : class
 		{
 			Type type = typeof(T);

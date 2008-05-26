@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Enyim.Caching.Memcached
 {
+	/// <summary>
+	/// Provides an interface for serializing items for Memcached.
+	/// </summary>
 	public interface ITranscoder
 	{
 		/// <summary>

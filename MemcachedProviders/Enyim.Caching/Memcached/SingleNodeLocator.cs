@@ -5,41 +5,37 @@ using System.Text;
 namespace Enyim.Caching.Memcached
 {
 	/// <summary>
-	/// Represents an object either being retrieved from the cache
-	/// or being sent to the cache.
+	/// This is a simple node locator with no computation overhead, always returns the first server from the list. Use only in single server deployments.
 	/// </summary>
-	public struct CacheItem
+	public sealed class SingleNodeLocator : IMemcachedNodeLocator
 	{
-		private ArraySegment<byte> data;
-		private ushort flags;
+		private MemcachedNode node;
+		private bool isInitialized;
 
-		/// <summary>
-		/// Initializes a new instance of <see cref="T:CacheItem"/>.
-		/// </summary>
-		/// <param name="flags">Custom item data.</param>
-		/// <param name="data">The serialized item.</param>
-		public CacheItem(ushort flags, ArraySegment<byte> data)
+		void IMemcachedNodeLocator.Initialize(IList<MemcachedNode> nodes)
 		{
-			this.data = data;
-			this.flags = flags;
+			if (this.isInitialized)
+				throw new InvalidOperationException("Instance is already initialized.");
+
+			// locking on this is rude but easy
+			lock (this)
+			{
+				if (this.isInitialized)
+					throw new InvalidOperationException("Instance is already initialized.");
+
+				if (nodes.Count > 0)
+					node = nodes[0];
+
+				this.isInitialized = true;
+			}
 		}
 
-		/// <summary>
-		/// The data representing the item being stored/retireved.
-		/// </summary>
-		public ArraySegment<byte> Data
+		MemcachedNode IMemcachedNodeLocator.Locate(string key)
 		{
-			get { return this.data; }
-			set { this.data = value; }
-		}
+			if (!this.isInitialized)
+				throw new InvalidOperationException("You must call Initialize first");
 
-		/// <summary>
-		/// Flags set for this instance.
-		/// </summary>
-		public ushort Flag
-		{
-			get { return this.flags; }
-			set { this.flags = value; }
+			return this.node;
 		}
 	}
 }

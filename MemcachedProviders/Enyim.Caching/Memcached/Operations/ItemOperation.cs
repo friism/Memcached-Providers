@@ -13,8 +13,6 @@ namespace Enyim.Caching.Memcached
 {
 	internal abstract class ItemOperation : Operation
 	{
-		private static log4net.ILog log = log4net.LogManager.GetLogger(typeof(ItemOperation));
-
 		private string key;
 		private string hashedKey;
 
@@ -64,6 +62,8 @@ namespace Enyim.Caching.Memcached
 
 		public override void Dispose()
 		{
+			GC.SuppressFinalize(this);
+
 			if (this.socket != null)
 			{
 				((IDisposable)this.socket).Dispose();

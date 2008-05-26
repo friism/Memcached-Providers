@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Enyim.Caching.Memcached
 {
-	internal sealed class DefaultKeyTransformer : IKeyTransformer
+	internal sealed class DefaultKeyTransformer : IMemcachedKeyTransformer
 	{
 		static readonly char[] ForbiddenChars = { 
 			'\u0000', '\u0001', '\u0002', '\u0003',
@@ -18,7 +18,7 @@ namespace Enyim.Caching.Memcached
 			'\u0020'
 		};
 
-		string IKeyTransformer.Transform(string key)
+		string IMemcachedKeyTransformer.Transform(string key)
 		{
 			// TODO we should convert it to UTf8 byte stream then check that for the forbidden byte values
 			if (key.IndexOfAny(ForbiddenChars) > -1)

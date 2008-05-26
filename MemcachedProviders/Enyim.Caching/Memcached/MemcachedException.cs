@@ -10,40 +10,28 @@ using System.Threading;
 
 namespace Enyim.Caching.Memcached
 {
+	/// <summary>
+	/// The exception that is thrown when an unknown error occures in the <see cref="T:MemcachedClient"/>
+	/// </summary>
 	[global::System.Serializable]
 	public class MemcachedException : Exception
 	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:MemcachedException"/> class.
+		/// </summary>
 		public MemcachedException() { }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:MemcachedException"/> class with a specified error message.
+		/// </summary>
 		public MemcachedException(string message) : base(message) { }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:MemcachedException"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.
+		/// </summary>
 		public MemcachedException(string message, Exception inner) : base(message, inner) { }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:MemcachedException"/> class with serialized data.
+		/// </summary>
 		protected MemcachedException(
-		  System.Runtime.Serialization.SerializationInfo info,
-		  System.Runtime.Serialization.StreamingContext context)
-			: base(info, context) { }
-	}
-
-
-	[global::System.Serializable]
-	public class CommandNotSupportedException : MemcachedClientException
-	{
-		//
-		// For guidelines regarding the creation of new exception types, see
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
-		// and
-		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
-		//
-
-		public CommandNotSupportedException() { }
-		public CommandNotSupportedException(string message) : base(message) { }
-		public CommandNotSupportedException(string message, Exception inner) : base(message, inner) { }
-		protected CommandNotSupportedException(
 		  System.Runtime.Serialization.SerializationInfo info,
 		  System.Runtime.Serialization.StreamingContext context)
 			: base(info, context) { }

@@ -23,9 +23,13 @@ namespace Enyim.Caching.Memcached
 
 		protected override bool ExecuteAction()
 		{
-			this.Socket.SendCommand(String.Concat("incr ", this.HashedKey, " ", this.amount.ToString(CultureInfo.InvariantCulture)));
+			PooledSocket socket = this.Socket;
+			if (socket == null)
+				return false;
 
-			string response = this.Socket.ReadResponse();
+			socket.SendCommand(String.Concat("incr ", this.HashedKey, " ", this.amount.ToString(CultureInfo.InvariantCulture)));
+
+			string response = socket.ReadResponse();
 
 			//maybe we should throw an exception when the item is not found?
 			if (String.Compare(response, "NOT_FOUND", StringComparison.Ordinal) == 0)

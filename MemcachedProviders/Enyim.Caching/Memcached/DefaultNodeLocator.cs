@@ -34,14 +34,14 @@ namespace Enyim.Caching.Memcached
 
 				foreach (MemcachedNode node in nodes)
 				{
-					List<uint> keys = this.GenerateKeys(node, DefaultNodeLocator.ServerAddressMutations);
+					List<uint> tmpKeys = DefaultNodeLocator.GenerateKeys(node, DefaultNodeLocator.ServerAddressMutations);
 
-					keys.ForEach(delegate(uint k)
+					tmpKeys.ForEach(delegate(uint k)
 					{
 						this.servers[k] = node;
 					});
 
-					keys.CopyTo(this.keys, nodeIdx);
+					tmpKeys.CopyTo(this.keys, nodeIdx);
 					nodeIdx += DefaultNodeLocator.ServerAddressMutations;
 				}
 
@@ -62,7 +62,7 @@ namespace Enyim.Caching.Memcached
 			if (this.keys.Length == 0)
 				return null;
 
-			uint itemKeyHash = BitConverter.ToUInt32(new ModifiedFNV().ComputeHash(Encoding.Unicode.GetBytes(key)), 0);
+			uint itemKeyHash = BitConverter.ToUInt32(new FNV1a().ComputeHash(Encoding.Unicode.GetBytes(key)), 0);
 
 			// get the index of the server assigned to this hash
 			int foundIndex = Array.BinarySearch<uint>(this.keys, itemKeyHash);
@@ -91,7 +91,7 @@ namespace Enyim.Caching.Memcached
 			return this.servers[this.keys[foundIndex]];
 		}
 
-		private List<uint> GenerateKeys(MemcachedNode node, int numberOfKeys)
+		private static List<uint> GenerateKeys(MemcachedNode node, int numberOfKeys)
 		{
 			const int KeyLength = 4;
 			const int PartCount = 1; // (ModifiedFNV.HashSize / 8) / KeyLength; // HashSize is in bits, uint is 4 byte long
@@ -111,7 +111,7 @@ namespace Enyim.Caching.Memcached
 
 			for (int i = 0; i < numberOfKeys; i++)
 			{
-				byte[] data = new ModifiedFNV().ComputeHash(Encoding.ASCII.GetBytes(String.Concat(address, "-", i)));
+				byte[] data = new FNV1a().ComputeHash(Encoding.ASCII.GetBytes(String.Concat(address, "-", i)));
 
 				for (int h = 0; h < PartCount; h++)
 				{

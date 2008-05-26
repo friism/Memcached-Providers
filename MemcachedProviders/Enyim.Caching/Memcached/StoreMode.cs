@@ -10,6 +10,9 @@ using System.Threading;
 
 namespace Enyim.Caching.Memcached
 {
+	/// <summary>
+	/// Inidicates the mode how the items are stored in Memcached.
+	/// </summary>
 	public enum StoreMode
 	{
 		/// <summary>

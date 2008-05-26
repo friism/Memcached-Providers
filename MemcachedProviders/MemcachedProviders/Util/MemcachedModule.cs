@@ -142,8 +142,7 @@ namespace MemcachedProviders.Util
         {
             HttpApplication app = (HttpApplication)o;
             HttpContext context = app.Context;
-
-            
+                       
 
             // Don't want to cache bad stuff
             if (context.Response.StatusCode == 200 && !context.Trace.IsEnabled)

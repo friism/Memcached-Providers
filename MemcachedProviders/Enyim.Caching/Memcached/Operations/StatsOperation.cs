@@ -26,6 +26,9 @@ namespace Enyim.Caching.Memcached
 			{
 				using (PooledSocket ps = server.Acquire())
 				{
+					if (ps == null)
+						continue;
+
 					ps.SendCommand("stats");
 
 					Dictionary<string, string> serverData = new Dictionary<string, string>(StringComparer.Ordinal);

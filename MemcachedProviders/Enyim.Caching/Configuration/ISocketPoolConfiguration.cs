@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Enyim.Caching.Configuration
 {
+	/// <summary>
+	/// Defines an interface for configuring the socket pool for the <see cref="T:MemcachedClient"/>.
+	/// </summary>
 	public interface ISocketPoolConfiguration
 	{
 		/// <summary>
@@ -31,6 +34,16 @@ namespace Enyim.Caching.Configuration
 		/// </summary>
 		/// <returns>The value of the connection timeout.</returns>
 		TimeSpan ConnectionTimeout
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets or sets a value that specifies the amount of time after which receiving data from the socket will fail.
+		/// </summary>
+		/// <returns>The value of the receive timeout.</returns>
+		TimeSpan ReceiveTimeout
 		{
 			get;
 			set;

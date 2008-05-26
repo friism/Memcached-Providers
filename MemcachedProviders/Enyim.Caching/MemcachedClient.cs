@@ -13,14 +13,20 @@ using System.Configuration;
 
 namespace Enyim.Caching
 {
-	public sealed class MemcachedClient
+	/// <summary>
+	/// Memcached client.
+	/// </summary>
+	public sealed class MemcachedClient : IDisposable
 	{
+		/// <summary>
+		/// Represents a value whihc indicates that an item should never expire.
+		/// </summary>
 		public static readonly TimeSpan Infinite = TimeSpan.Zero;
 
 		private ServerPool pool;
 
 		/// <summary>
-		/// Initializes a new MemcachedClient instance using the default configuratino section (enyim/memcached).
+		/// Initializes a new MemcachedClient instance using the default configuration section (enyim/memcached).
 		/// </summary>
 		public MemcachedClient()
 		{
@@ -31,7 +37,7 @@ namespace Enyim.Caching
 		/// Initializes a new MemcacedClient instance using the specified configuration section. 
 		/// This overload allows to create multiple MemcachedClients with different pool configurations.
 		/// </summary>
-		/// <param name="sectionName"></param>
+		/// <param name="sectionName">The name of the configuration section to be used for configuring the behavior of the client.</param>
 		public MemcachedClient(string sectionName)
 		{
 			MemcachedClientSection section = (MemcachedClientSection)ConfigurationManager.GetSection(sectionName);
@@ -42,6 +48,10 @@ namespace Enyim.Caching
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:MemcachedClient"/> using the specified configuration.
+		/// </summary>
+		/// <param name="configuration">The client configuration.</param>
 		public MemcachedClient(IMemcachedClientConfiguration configuration)
 		{
 			if (configuration == null)
@@ -348,6 +358,12 @@ namespace Enyim.Caching
 			return Get(keys, out tmp);
 		}
 
+		/// <summary>
+		/// Retrieves multiple items from the cache.
+		/// </summary>
+		/// <param name="keys">The list of identifiers for the items to retrieve.</param>
+		/// <param name="casValues">The CAS values for the keys.</param>
+		/// <returns>a Dictionary holding all items indexed by their key.</returns>
 		public IDictionary<string, object> Get(IEnumerable<string> keys, out IDictionary<string, ulong> casValues)
 		{
 			using (MultiGetOperation mgo = new MultiGetOperation(this.pool, keys))
@@ -387,6 +403,27 @@ namespace Enyim.Caching
 			}
 		}
 		#endregion
+
+		void IDisposable.Dispose()
+		{
+			this.Dispose();
+		}
+
+		/// <summary>
+		/// Releases all resources allocated by this instance
+		/// </summary>
+		/// <remarks>Technically it's not really neccesary to call this, since the client does not create "really" disposable objects, so it's safe to assume that when the AppPool shuts down all resources will be released correctly and no handles or such will remain in the memory.</remarks>
+		public void Dispose()
+		{
+			if (this.pool == null)
+				throw new ObjectDisposedException("MemcachedClient");
+
+			lock (this)
+			{
+				((IDisposable)this.pool).Dispose();
+				this.pool = null;
+			}
+		}
 	}
 }
 

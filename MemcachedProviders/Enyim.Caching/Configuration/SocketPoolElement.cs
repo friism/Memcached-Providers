@@ -46,16 +46,30 @@ namespace Enyim.Caching.Configuration
 		}
 
 		/// <summary>
+		/// Gets or sets a value that specifies the amount of time after which receiving data from the socket fails.
+		/// </summary>
+		/// <returns>The value of the receive timeout. The default is 10 seconds.</returns>
+		[ConfigurationProperty("receiveTimeout", IsRequired = false, DefaultValue = "00:00:10"), PositiveTimeSpanValidator, TypeConverter(typeof(InfiniteTimeSpanConverter))]
+		public TimeSpan ReceiveTimeout
+		{
+			get { return (TimeSpan)base["receiveTimeout"]; }
+			set { base["receiveTimeout"] = value; }
+		}
+
+		/// <summary>
 		/// Gets or sets a value that specifies the amount of time after which an unresponsive (dead) server will be checked if it is working.
 		/// </summary>
 		/// <returns>The value of the dead timeout. The default is 2 minutes.</returns>
-		[ConfigurationProperty("deadTimeout", IsRequired = false, DefaultValue = "00:02:00"), PositiveTimeSpanValidator, TypeConverter(typeof(TimeSpanConverter))]
+		[ConfigurationProperty("deadTimeout", IsRequired = false, DefaultValue = "00:02:00"), PositiveTimeSpanValidator, TypeConverter(typeof(InfiniteTimeSpanConverter))]
 		public TimeSpan DeadTimeout
 		{
 			get { return (TimeSpan)base["deadTimeout"]; }
 			set { base["deadTimeout"] = value; }
 		}
 
+		/// <summary>
+		/// Called after deserialization.
+		/// </summary>
 		protected override void PostDeserialize()
 		{
 			base.PostDeserialize();

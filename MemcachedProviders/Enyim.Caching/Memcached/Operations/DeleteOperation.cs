@@ -19,9 +19,13 @@ namespace Enyim.Caching.Memcached
 
 		protected override bool ExecuteAction()
 		{
-			this.Socket.SendCommand("delete " + this.HashedKey);
+			PooledSocket socket = this.Socket;
+			if (socket == null)
+				return false;
 
-			return String.Compare(this.Socket.ReadResponse(), "DELETED", StringComparison.Ordinal) == 0;
+			socket.SendCommand("delete " + this.HashedKey);
+
+			return String.Compare(socket.ReadResponse(), "DELETED", StringComparison.Ordinal) == 0;
 		}
 	}
 }

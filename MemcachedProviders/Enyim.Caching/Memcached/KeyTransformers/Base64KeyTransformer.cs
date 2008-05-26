@@ -2,18 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Enyim.Reflection
+namespace Enyim.Caching.Memcached
 {
 	/// <summary>
-	/// This interface supports the <see cref="T:FastActivator"/> and is not intended to be used directly from your code.
+	/// A key transformer which converts the item keys into Base64.
 	/// </summary>
-	public interface IFastObjectFacory
+	public sealed class Base64KeyTransformer : IMemcachedKeyTransformer
 	{
-		/// <summary>
-		/// This method supports the <see cref="T:FastActivator"/> and is not intended to be used directly from your code.
-		/// </summary>
-		/// <returns></returns>
-		object CreateInstance();
+		string IMemcachedKeyTransformer.Transform(string key)
+		{
+			return Convert.ToBase64String(Encoding.UTF8.GetBytes(key), Base64FormattingOptions.None);
+		}
 	}
 }
 

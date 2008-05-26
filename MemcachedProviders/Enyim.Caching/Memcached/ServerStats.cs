@@ -5,13 +5,20 @@ using System.Net;
 
 namespace Enyim.Caching.Memcached
 {
+	/// <summary>
+	/// Represents the statistics of a Memcached node.
+	/// </summary>
 	public sealed class ServerStats
 	{
 		private const int OpAllowsSum = 1;
-
 		private static log4net.ILog log = log4net.LogManager.GetLogger(typeof(ServerStats));
+
+		/// <summary>
+		/// Defines a value which indicates that the statstics should be retrieved for all servers in the pool.
+		/// </summary>
 		public static readonly IPEndPoint All = new IPEndPoint(IPAddress.Any, 0);
 		#region [ readonly int[] Optable       ]
+		// defines which values can be summed and which not
 		private static readonly int[] Optable = 
 		{
 			0, 0, 0, 1, 1, 1, 1, 1,
@@ -150,7 +157,7 @@ namespace Enyim.Caching.Memcached
 		/// Returns the stat value for a specific server. The value is not converted but returned as the server returned it.
 		/// </summary>
 		/// <param name="server">The adress of the server</param>
-		/// <param name="key">The stat value to be returned</param>
+		/// <param name="item">The stat value to be returned</param>
 		/// <returns>The value of the stat item</returns>
 		public string GetRaw(IPEndPoint server, StatItem item)
 		{

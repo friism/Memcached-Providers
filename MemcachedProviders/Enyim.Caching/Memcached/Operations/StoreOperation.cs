@@ -56,6 +56,9 @@ namespace Enyim.Caching.Memcached
 
 		protected override bool ExecuteAction()
 		{
+			if (this.Socket == null)
+				return false;
+
 			CacheItem item = this.ServerPool.Transcoder.Serialize(this.value);
 
 			return this.Store(item.Flag, item.Data);
@@ -88,7 +91,7 @@ namespace Enyim.Caching.Memcached
 				case StoreCommand.CheckAndSet:
 					sb.Append("cas ");
 					break;
-				
+
 				default:
 					throw new MemcachedClientException(mode + " is not supported.");
 			}

@@ -6,7 +6,10 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Enyim.Caching.Memcached
 {
-	internal class DefaultTranscoder : ITranscoder
+	/// <summary>
+	/// Default <see cref="T:ITranscoder"/> implementation. Primitive types are manually serialized, the rest is serialized using <see cref="T:BinarySerializer"/>.
+	/// </summary>
+	public sealed class DefaultTranscoder : ITranscoder
 	{
 		#region [ TypeCode from Reflector      ]
 	/*
@@ -49,10 +52,12 @@ namespace Enyim.Caching.Memcached
 				return new CacheItem(RawDataFlag, (ArraySegment<byte>)value);
 			}
 
+			byte[] tmpByteArray = value as byte[];
+
 			// - or we just received a byte[]. No further processing is needed.
-			if (value is byte[])
+			if (tmpByteArray != null)
 			{
-				return new CacheItem(RawDataFlag, new ArraySegment<byte>((byte[])value));
+				return new CacheItem(RawDataFlag, new ArraySegment<byte>(tmpByteArray));
 			}
 
 			TypeCode code = value == null ? TypeCode.Empty : Type.GetTypeCode(value.GetType());

@@ -5,7 +5,7 @@ using System.Configuration;
 
 namespace Enyim.Caching.Configuration
 {
-	public sealed class InterfaceValidator : ConfigurationValidatorBase
+	internal sealed class InterfaceValidator : ConfigurationValidatorBase
 	{
 		private Type interfaceType;
 
@@ -29,7 +29,7 @@ namespace Enyim.Caching.Configuration
 		}
 	}
 
-	public sealed class InterfaceValidatorAttribute : ConfigurationValidatorAttribute
+	internal sealed class InterfaceValidatorAttribute : ConfigurationValidatorAttribute
 	{
 		private Type interfaceType;
 

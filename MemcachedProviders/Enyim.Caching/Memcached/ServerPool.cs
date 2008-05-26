@@ -28,7 +28,7 @@ namespace Enyim.Caching.Memcached
 
 		private Timer isAliveTimer;
 		private IMemcachedClientConfiguration configuration;
-		private IKeyTransformer keyTransformer;
+		private IMemcachedKeyTransformer keyTransformer;
 		private IMemcachedNodeLocator nodeLocator;
 		private ITranscoder transcoder;
 
@@ -37,14 +37,14 @@ namespace Enyim.Caching.Memcached
 		public ServerPool(IMemcachedClientConfiguration configuration)
 		{
 			if (configuration == null)
-				throw new ArgumentNullException("settings", "Invalid or missing pool configuration. Check if the enyim.com/memcached section or your custom section presents in the app/web.config.");
+				throw new ArgumentNullException("configuration", "Invalid or missing pool configuration. Check if the enyim.com/memcached section or your custom section presents in the app/web.config.");
 
 			this.configuration = configuration;
 			this.isAliveTimer = new Timer(callback_isAliveTimer, null, (int)this.configuration.SocketPool.DeadTimeout.TotalMilliseconds, (int)this.configuration.SocketPool.DeadTimeout.TotalMilliseconds);
 
 			// create the key transformer instance
 			Type t = this.configuration.KeyTransformer;
-			this.keyTransformer = (t == null) ? new DefaultKeyTransformer() : (IKeyTransformer)Activator.CreateInstance(t);
+			this.keyTransformer = (t == null) ? new DefaultKeyTransformer() : (IMemcachedKeyTransformer)Activator.CreateInstance(t);
 
 			// create the item transcoder instance
 			t = this.configuration.Transcoder;
@@ -65,7 +65,7 @@ namespace Enyim.Caching.Memcached
 
 		private void RebuildIndexes()
 		{
-			this.serverAccessLock.AcquireWriterLock(Timeout.Infinite);
+			this.serverAccessLock.UpgradeToWriterLock(Timeout.Infinite);
 
 			try
 			{
@@ -127,7 +127,7 @@ namespace Enyim.Caching.Memcached
 		/// <param name="node"></param>
 		private void MarkAsDead(MemcachedNode node)
 		{
-			this.serverAccessLock.AcquireWriterLock(Timeout.Infinite);
+			this.serverAccessLock.UpgradeToWriterLock(Timeout.Infinite);
 
 			try
 			{
@@ -149,7 +149,7 @@ namespace Enyim.Caching.Memcached
 		/// <summary>
 		/// Returns the <see cref="t:IKeyTransformer"/> instance used by the pool
 		/// </summary>
-		public IKeyTransformer KeyTransformer
+		public IMemcachedKeyTransformer KeyTransformer
 		{
 			get { return this.keyTransformer; }
 		}
@@ -232,7 +232,7 @@ namespace Enyim.Caching.Memcached
 
 		public IDictionary<MemcachedNode, IList<string>> SplitKeys(IEnumerable<string> keys)
 		{
-			Dictionary<MemcachedNode, IList<string>> keysByNode = new Dictionary<MemcachedNode, IList<string>>(new MemcachedNodeComparer());
+			Dictionary<MemcachedNode, IList<string>> keysByNode = new Dictionary<MemcachedNode, IList<string>>(MemcachedNode.Comparer.Instance);
 
 			IList<string> nodeKeys;
 			MemcachedNode node;
@@ -261,11 +261,13 @@ namespace Enyim.Caching.Memcached
 			if (rwl == null)
 				return;
 
+			GC.SuppressFinalize(this);
+
 			this.serverAccessLock = null;
 
 			try
 			{
-				rwl.AcquireWriterLock(Timeout.Infinite);
+				rwl.UpgradeToWriterLock(Timeout.Infinite);
 
 				this.deadServers.ForEach(delegate(MemcachedNode node) { node.Dispose(); });
 				this.workingServers.ForEach(delegate(MemcachedNode node) { node.Dispose(); });

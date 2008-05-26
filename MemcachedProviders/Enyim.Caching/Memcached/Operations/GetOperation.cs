@@ -14,8 +14,6 @@ namespace Enyim.Caching.Memcached
 {
 	internal class GetOperation : ItemOperation
 	{
-		private static log4net.ILog log = log4net.LogManager.GetLogger(typeof(GetOperation));
-
 		private object result;
 
 		internal GetOperation(ServerPool pool, string key)
@@ -30,7 +28,12 @@ namespace Enyim.Caching.Memcached
 
 		protected override bool ExecuteAction()
 		{
-			this.Socket.SendCommand("get " + this.HashedKey);
+			PooledSocket socket = this.Socket;
+
+			if (socket == null)
+				return false;
+
+			socket.SendCommand("get " + this.HashedKey);
 
 			GetResponse r = GetHelper.ReadItem(this.Socket);
 

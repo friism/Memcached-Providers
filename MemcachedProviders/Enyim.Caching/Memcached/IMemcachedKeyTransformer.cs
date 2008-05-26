@@ -1,19 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Security.Cryptography;
 
-namespace Enyim.Reflection
+namespace Enyim.Caching.Memcached
 {
 	/// <summary>
-	/// This interface supports the <see cref="T:FastActivator"/> and is not intended to be used directly from your code.
+	/// Converts Memcached item keys into a custom format.
 	/// </summary>
-	public interface IFastObjectFacory
+	public interface IMemcachedKeyTransformer
 	{
 		/// <summary>
-		/// This method supports the <see cref="T:FastActivator"/> and is not intended to be used directly from your code.
+		/// Performs the transformation.
 		/// </summary>
-		/// <returns></returns>
-		object CreateInstance();
+		/// <param name="key">The key to be transformed.</param>
+		/// <returns>the transformed key.</returns>
+		string Transform(string key);
 	}
 }
 

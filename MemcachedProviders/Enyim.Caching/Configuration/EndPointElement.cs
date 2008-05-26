@@ -5,10 +5,16 @@ using System.Configuration;
 
 namespace Enyim.Caching.Configuration
 {
+	/// <summary>
+	/// Represents a configuration element that contains a Memcached node address. This class cannot be inherited. 
+	/// </summary>
 	public sealed class EndPointElement : ConfigurationElement
 	{
 		private System.Net.IPEndPoint endpoint;
 
+		/// <summary>
+		/// Gets or sets the ip address of the node.
+		/// </summary>
 		[ConfigurationProperty("address", IsRequired = true, IsKey = true), ConfigurationValidator(typeof(EndPointElement.IPAddressValidator))]
 		public string Address
 		{
@@ -16,6 +22,9 @@ namespace Enyim.Caching.Configuration
 			set { base["address"] = value; }
 		}
 
+		/// <summary>
+		/// Gets or sets the port of the node.
+		/// </summary>
 		[ConfigurationProperty("port", IsRequired = true, IsKey = true), IntegerValidator(MinValue = 0, MaxValue = 65535)]
 		public int Port
 		{
@@ -23,6 +32,9 @@ namespace Enyim.Caching.Configuration
 			set { base["port"] = value; }
 		}
 
+		/// <summary>
+		/// Gets the <see cref="T:IPEndPoint"/> representation of this instance.
+		/// </summary>
 		public System.Net.IPEndPoint EndPoint
 		{
 			get { return (this.endpoint ?? (this.endpoint = new System.Net.IPEndPoint(System.Net.IPAddress.Parse(this.Address), this.Port))); }
