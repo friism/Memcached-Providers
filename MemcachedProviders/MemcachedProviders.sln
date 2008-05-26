@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		License.txt = License.txt
 		log4net.dll = log4net.dll
+		SmartThreadPool.dll = SmartThreadPool.dll
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependancyServer", "DependancyServer\DependancyServer.csproj", "{3B3B17D1-7208-4759-877C-78E507652B10}"
