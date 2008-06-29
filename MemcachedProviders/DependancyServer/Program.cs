@@ -76,17 +76,64 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using DependancyServer.Server;
+using System.Diagnostics;
 
 
 namespace DependancyServer
 {
-    class Program
+    class Program : System.ServiceProcess.ServiceBase
     {
+        internal static EventLog log;
+        private const string _strName = "Dependancy Service Log";
+        private const string _strSource = "DependancyService";
+        IDependancyServer _objServer = null;
+
+        public Program()
+        {
+            if (!EventLog.SourceExists(_strSource))
+                EventLog.CreateEventSource(_strSource, _strName);
+            log = new EventLog();
+            log.Source = _strSource;
+
+            _objServer = new DependancyServer.Server.MemcachedDependancyImpl();
+            this.AutoLog = true;
+        }
+
         static void Main(string[] args)
         {
-            IDependancyServer objServer = new DependancyServer.Server.MemcachedDependancyImpl();
-            objServer.Start();
-            Console.ReadLine();
+            if (args.Length > 0 && args[0].ToLower() == "/console")
+            {
+                new Program().OnStart(args);
+                Console.ReadLine();
+            }
+            else
+            {
+                System.ServiceProcess.ServiceBase[] objServicesToRun;
+
+                objServicesToRun = new System.ServiceProcess.ServiceBase[] { new Program() };
+                System.ServiceProcess.ServiceBase.Run(objServicesToRun);
+            }
+
         }
+
+        protected override void OnStart(string[] args)
+        {
+            this._objServer.Start();
+            base.OnStart(args);
+        }
+
+        protected override void OnStop()
+        {
+            this._objServer.Stop();
+            base.OnStop();
+        }
+
+        private void InitializeComponent()
+        {
+            // 
+            // Program
+            // 
+            this.ServiceName = "Dependancy Server Service";
+        }     
     }
 }
