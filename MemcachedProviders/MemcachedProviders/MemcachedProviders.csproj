@@ -51,6 +51,7 @@
     <Compile Include="Common\ConfigurationUtil.cs" />
     <Compile Include="Cache\DistCache.cs" />
     <Compile Include="Cache\MemcachedCacheProvider.cs" />
+    <Compile Include="Common\DependancyClient.cs" />
     <Compile Include="Common\MemcachedService.cs" />
     <Compile Include="Session\Db\IDbOperations.cs" />
     <Compile Include="Session\Db\SQLDbOperations.cs" />
