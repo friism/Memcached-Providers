@@ -31,15 +31,16 @@ namespace MemcachedProviders.Common
 
         public bool SetFileDependancy(string strFilename, params string[] str)
         {
-            try
-            {
+            return false;
+            //try
+            //{
                  
-            }
-            catch(Exception err)
-            {
-                Debug.WriteLine(err.ToString());
-                return false;                
-            }
+            //}
+            //catch(Exception err)
+            //{
+            //    Debug.WriteLine(err.ToString());
+            //    return false;                
+            //}
         }
 
         private string CreateSetFileDependancyCommand(string strFilename, params string[] strKeys)
