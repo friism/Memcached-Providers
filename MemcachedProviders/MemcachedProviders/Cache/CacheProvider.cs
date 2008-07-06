@@ -95,6 +95,7 @@ namespace MemcachedProviders.Cache
         public abstract void RemoveAll();
         public abstract bool Remove(string strKey);        
         public abstract long Increment(string key, long amount);
-        public abstract long Decrement(string key, long amount);          
+        public abstract long Decrement(string key, long amount);
+        internal abstract void CheckPerformanceCounterCategories();  
     }
 }
