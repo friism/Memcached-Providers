@@ -90,10 +90,19 @@ namespace MemcachedProviders.Cache
         private long _lDefaultExpireTime = 2000; // default Expire Time
         private string _strKeySuffix = string.Empty;
         private MemcachedClient _client = null;
-        PerformanceCounter _objTotalOperations;
-        PerformanceCounter _objOperationsPerSecond;
-        PerformanceCounter _objAddOperations;
-        PerformanceCounter _objGetOperations;
+        private string _strCacheCatName = "Memcached Cache Provider";
+        private string _strTotalOpName = "# operations executed";
+        private string _strOpPerSecName = "# operations / sec";
+        private string _strAddOpName = "# of add operations executed";
+        private string _strGetOpName = "# of get operations executed";
+        private string _strAddOpPerSecName = "# of add operations / sec";
+        private string _strGetOpPerSecName = "# of get operations / sec";
+        private PerformanceCounter _objTotalOperations;
+        private PerformanceCounter _objOperationsPerSecond;
+        private PerformanceCounter _objAddOperations;
+        private PerformanceCounter _objGetOperations;
+        private PerformanceCounter _objAddPerSecondOperations;
+        private PerformanceCounter _objGetPerSecondOperations;
         #endregion
                
 
@@ -280,68 +289,94 @@ namespace MemcachedProviders.Cache
         #region Performance Counter Methods
         internal override void CheckPerformanceCounterCategories()
         {
-            if (!PerformanceCounterCategory.Exists("Memcached Cache Provider"))
+            if (!PerformanceCounterCategory.Exists(_strCacheCatName))
             {
                 CounterCreationDataCollection counters = new CounterCreationDataCollection();
                                 
                 CounterCreationData totalOps = new CounterCreationData();
-                totalOps.CounterName = "# operations executed";
+                totalOps.CounterName = _strTotalOpName;
                 totalOps.CounterHelp = "Total number of operations executed";
                 totalOps.CounterType = PerformanceCounterType.NumberOfItems32;
                 counters.Add(totalOps);
                                 
                 CounterCreationData opsPerSecond = new CounterCreationData();
-                opsPerSecond.CounterName = "# operations / sec";
+                opsPerSecond.CounterName = _strOpPerSecName;
                 opsPerSecond.CounterHelp = "Number of operations executed per second";
                 opsPerSecond.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
                 counters.Add(opsPerSecond);
                                 
                 CounterCreationData addOps = new CounterCreationData();
-                addOps.CounterName = "# of add operations executed";
+                addOps.CounterName = _strAddOpName;
                 addOps.CounterHelp = "Number of add operations execution";
                 addOps.CounterType = PerformanceCounterType.NumberOfItems32;
                 counters.Add(addOps);
+
+                CounterCreationData addOpsPerSec = new CounterCreationData();
+                addOpsPerSec.CounterName = _strAddOpPerSecName;
+                addOpsPerSec.CounterHelp = "Number of add operations per second";
+                addOpsPerSec.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
+                counters.Add(addOpsPerSec);
                                 
                 CounterCreationData getOps = new CounterCreationData();
-                getOps.CounterName = "# of get operations executed";
+                getOps.CounterName = _strGetOpName;
                 getOps.CounterHelp = "Number of get operations execution";
                 getOps.CounterType = PerformanceCounterType.NumberOfItems32;
                 counters.Add(getOps);
+
+                CounterCreationData getOpsPerSec = new CounterCreationData();
+                getOpsPerSec.CounterName = _strGetOpPerSecName;
+                getOpsPerSec.CounterHelp = "Number of get operations per second";
+                getOpsPerSec.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
+                counters.Add(getOpsPerSec);
                 
                 // create new category with the counters above
-                PerformanceCounterCategory.Create("Memcached Cache Provider",
+                PerformanceCounterCategory.Create(_strCacheCatName,
                         "Memcached Cache Provider Performance Counter", 
                         PerformanceCounterCategoryType.SingleInstance, counters);
             }
 
             // create counters to work with
             _objTotalOperations = new PerformanceCounter();
-            _objTotalOperations.CategoryName = "Memcached Cache Provider";
-            _objTotalOperations.CounterName = "# operations executed";
+            _objTotalOperations.CategoryName = _strCacheCatName;
+            _objTotalOperations.CounterName = _strTotalOpName;
             _objTotalOperations.MachineName = ".";
             _objTotalOperations.ReadOnly = false;
             _objTotalOperations.RawValue = 0;
 
             _objOperationsPerSecond = new PerformanceCounter();
-            _objOperationsPerSecond.CategoryName = "Memcached Cache Provider";
-            _objOperationsPerSecond.CounterName = "# operations / sec";
+            _objOperationsPerSecond.CategoryName = _strCacheCatName;
+            _objOperationsPerSecond.CounterName = _strOpPerSecName;
             _objOperationsPerSecond.MachineName = ".";
             _objOperationsPerSecond.ReadOnly = false;
             _objOperationsPerSecond.RawValue = 0;
 
             _objAddOperations = new PerformanceCounter();
-            _objAddOperations.CategoryName = "Memcached Cache Provider";
-            _objAddOperations.CounterName = "# of add operations executed";
+            _objAddOperations.CategoryName = _strCacheCatName;
+            _objAddOperations.CounterName = _strAddOpName;
             _objAddOperations.MachineName = ".";
             _objAddOperations.ReadOnly = false;
             _objAddOperations.RawValue = 0;
 
+            _objAddPerSecondOperations = new PerformanceCounter();
+            _objAddPerSecondOperations.CategoryName = _strCacheCatName;
+            _objAddPerSecondOperations.CounterName = _strAddOpPerSecName;
+            _objAddPerSecondOperations.MachineName = ".";
+            _objAddPerSecondOperations.ReadOnly = false;
+            _objAddPerSecondOperations.RawValue = 0;
+
             _objGetOperations = new PerformanceCounter();
-            _objGetOperations.CategoryName = "Memcached Cache Provider";
-            _objGetOperations.CounterName = "# of get operations executed";
+            _objGetOperations.CategoryName = _strCacheCatName;
+            _objGetOperations.CounterName = _strGetOpName;
             _objGetOperations.MachineName = ".";
             _objGetOperations.ReadOnly = false;
             _objGetOperations.RawValue = 0;
+
+            _objGetPerSecondOperations = new PerformanceCounter();
+            _objGetPerSecondOperations.CategoryName = _strCacheCatName;
+            _objGetPerSecondOperations.CounterName = _strGetOpPerSecName;
+            _objGetPerSecondOperations.MachineName = ".";
+            _objGetPerSecondOperations.ReadOnly = false;
+            _objGetPerSecondOperations.RawValue = 0;
 
 
         }
@@ -355,11 +390,13 @@ namespace MemcachedProviders.Cache
         internal void IncrementAddOperPC()
         {
             this._objAddOperations.Increment();
+            this._objAddPerSecondOperations.Increment();
         }
 
         internal void IncrementGetOperPC()
         {
             this._objGetOperations.Increment();
+            this._objGetPerSecondOperations.Increment();
         }
         #endregion
     }

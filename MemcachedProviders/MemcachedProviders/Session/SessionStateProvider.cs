@@ -101,6 +101,19 @@ namespace MemcachedProviders.Session
         private SessionStateSection _objConfig = null;
         private bool _objWriteExceptionsToEventLog = false;
         private bool _bIsDbNone = false;
+        private string _strSessionProviderCat = "Memcached Session Provider";
+        private string _strTotalOperName = "# operations executed";
+        private string _strOperPerSecName = "# operations / sec";
+        private string _strMemcachedOp = "# of memcached operations executed";
+        private string _strMemcachedOpPerSec = "# of memcached operations / sec";
+        private string _strDbOp = "# of database operations executed";
+        private string _strDbOpPerSec = "# of database operations / sec";
+        private PerformanceCounter _objTotalOperations;        
+        private PerformanceCounter _objOperationsPerSecond;
+        private PerformanceCounter _objMemcachedOperations;
+        private PerformanceCounter _objMemcachedOperPerSec;
+        private PerformanceCounter _objDbOperations;
+        private PerformanceCounter _objDbOperationsPerSec;
 
         // Memcached variables
         private MemcachedClient _client = MemcachedClientService.Instance.Client;
@@ -187,6 +200,9 @@ namespace MemcachedProviders.Session
             //
             _lTimeoutInMilliSec = _objConfig.Timeout.Milliseconds;
 
+            //Initialize Performance Counter
+            this.CheckPerformanceCounterCategories();
+
             //
             // Initialize WriteExceptionsToEventLog
             //
@@ -201,17 +217,20 @@ namespace MemcachedProviders.Session
 
         public override SessionStateStoreData CreateNewStoreData(System.Web.HttpContext context, int timeout)
         {
+            this.IncrementTotalOperPC();
             return Common.CreateNewStoreData(context, timeout);
         }
 
         public override void CreateUninitializedItem(System.Web.HttpContext context, string id,
             int timeout)
         {
+            this.IncrementTotalOperPC();
             DateTime dSetTime = DateTime.Now;
 
             if (this._bIsDbNone == false)
             {
                 #region Setting it in Db
+                this.IncrementDbPC();
                 using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
                 {
                     objDb.Add(id, ApplicationName, dSetTime,
@@ -222,7 +241,7 @@ namespace MemcachedProviders.Session
             }
 
             #region Updating item in memcached
-
+            this.IncrementMemcachedPC();
             MemcachedHolder objHolder = new MemcachedHolder(
                 null, false, dSetTime, 0, 1);
 
@@ -244,8 +263,11 @@ namespace MemcachedProviders.Session
         public override SessionStateStoreData GetItem(System.Web.HttpContext context, string id,
             out bool locked, out TimeSpan lockAge, out object lockId, out SessionStateActions actions)
         {
+            this.IncrementTotalOperPC();
+
             SessionStateStoreData objItem = null;
 
+            this.IncrementMemcachedPC();
             MemcachedHolder objHolder = this._client.Get<MemcachedHolder>(id);
             DateTime dSetTime = DateTime.Now;
 
@@ -272,6 +294,7 @@ namespace MemcachedProviders.Session
 
                     if (this._bIsDbNone == false) // Saving to Db
                     {
+                        this.IncrementDbPC();
                         using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
                         {
                             objDb.LockItem(id, ApplicationName, objHolder.LockId);
@@ -304,6 +327,7 @@ namespace MemcachedProviders.Session
             {
                 if (this._bIsDbNone == false)
                 {
+                    this.IncrementDbPC();
                     using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
                     {
                         return objDb.GetItem(id, ApplicationName, _objConfig.Timeout.Minutes,
@@ -320,6 +344,9 @@ namespace MemcachedProviders.Session
         public override SessionStateStoreData GetItemExclusive(System.Web.HttpContext context, string id,
             out bool locked, out TimeSpan lockAge, out object lockId, out SessionStateActions actions)
         {
+            this.IncrementTotalOperPC();
+
+            this.IncrementMemcachedPC();
             SessionStateStoreData objItem = null;
             MemcachedHolder objHolder = this._client.Get<MemcachedHolder>(id);
             DateTime dSetTime = DateTime.Now;
@@ -341,7 +368,8 @@ namespace MemcachedProviders.Session
 
                     // Locking Item for memcached
                     objHolder.Locked = true;
-                    
+
+                    this.IncrementMemcachedPC();
                     this._client.Store(StoreMode.Set, id, objHolder,
                         new TimeSpan(0, 0, 0, 0, _objConfig.Timeout.Milliseconds));
 
@@ -351,6 +379,7 @@ namespace MemcachedProviders.Session
 
                     if (this._bIsDbNone == false) // Saving to Db
                     {
+                        this.IncrementDbPC();
                         using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
                         {
                             locked = objDb.LockItemWithoutLockId(id, ApplicationName);
@@ -385,6 +414,7 @@ namespace MemcachedProviders.Session
             {
                 if (this._bIsDbNone == false) // Saving to Db
                 {
+                    this.IncrementDbPC();
                     using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
                     {
                         return objDb.GetItem(id, ApplicationName, _objConfig.Timeout.Minutes,
@@ -405,13 +435,17 @@ namespace MemcachedProviders.Session
 
         public override void ReleaseItemExclusive(System.Web.HttpContext context, string id, object lockId)
         {
+            this.IncrementTotalOperPC();
+
             #region Updating item in memcached
+            this.IncrementMemcachedPC();
             MemcachedHolder objHolder = this._client.Get<MemcachedHolder>(id);
 
             if (objHolder != null)
             {
                 objHolder.Locked = false;
                 objHolder.LockId = (int)lockId;
+                this.IncrementMemcachedPC();
                 this._client.Store(StoreMode.Set, id, objHolder);
             }
             #endregion
@@ -419,6 +453,7 @@ namespace MemcachedProviders.Session
             if (this._bIsDbNone == false)
             {
                 #region Updating Database
+                this.IncrementDbPC();
                 using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
                 {
                     objDb.ReleaseItem(id, ApplicationName, (int)lockId, _objConfig.Timeout.Minutes);
@@ -429,13 +464,17 @@ namespace MemcachedProviders.Session
 
         public override void RemoveItem(System.Web.HttpContext context, string id, object lockId, SessionStateStoreData item)
         {
+            this.IncrementTotalOperPC();
+
             #region Removing Item from memcached
+            this.IncrementMemcachedPC();
             this._client.Remove(id);
             #endregion
 
             if (this._bIsDbNone == false) // Saving to Db
             {
                 #region Removing item from db
+                this.IncrementDbPC();
                 using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
                 {
                     objDb.RemoveItem(id, ApplicationName);
@@ -446,11 +485,15 @@ namespace MemcachedProviders.Session
 
         public override void ResetItemTimeout(System.Web.HttpContext context, string id)
         {
+            this.IncrementTotalOperPC();
+
             #region Reset Item Timeout in Memcached
+            this.IncrementMemcachedPC();
             object obj = this._client.Get(id);
 
             if (obj != null)
             {
+                this.IncrementMemcachedPC();
                 this._client.Store(StoreMode.Set, id, obj,new TimeSpan(0,_objConfig.Timeout.Minutes,0));
             }
 
@@ -459,6 +502,7 @@ namespace MemcachedProviders.Session
             if (this._bIsDbNone == false) // Saving to Db
             {
                 #region Reset Item Timeout in db
+                this.IncrementDbPC();
                 using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
                 {
                     objDb.ResetItemTimeout(id, ApplicationName, _objConfig.Timeout.Minutes);
@@ -470,6 +514,8 @@ namespace MemcachedProviders.Session
         public override void SetAndReleaseItemExclusive(System.Web.HttpContext context,
             string id, SessionStateStoreData item, object lockId, bool newItem)
         {
+            this.IncrementTotalOperPC();
+
             if (this._bIsDbNone == false)
             {
                 #region Db option
@@ -482,6 +528,7 @@ namespace MemcachedProviders.Session
 
                     if (newItem == true)
                     {
+                        this.IncrementDbPC();
                         objDb.Add(id, ApplicationName, dSetTime,
                             dSetTime.AddMinutes((Double)item.Timeout), dSetTime,
                             0, item.Timeout, false,
@@ -490,11 +537,13 @@ namespace MemcachedProviders.Session
                         // Setting it up in memcached                    
                         MemcachedHolder objHolder = new MemcachedHolder(
                              objContent, false, dSetTime, 0, 0);
+                        this.IncrementMemcachedPC();
                         this._client.Store(StoreMode.Set,
                             id, objHolder, new TimeSpan(0, item.Timeout, 0));
                     }
                     else
                     {
+                        this.IncrementDbPC();
                         objDb.Update(id, ApplicationName, (int)lockId,
                             dSetTime.AddMinutes((Double)item.Timeout),
                             objContent, false);
@@ -503,6 +552,7 @@ namespace MemcachedProviders.Session
                         MemcachedHolder objHolder = new MemcachedHolder(
                             objContent, false, dSetTime, 0, 0);
 
+                        this.IncrementMemcachedPC();
                         this._client.Store(StoreMode.Set,
                             id, objHolder, new TimeSpan(0, item.Timeout, 0));
                     }
@@ -517,29 +567,21 @@ namespace MemcachedProviders.Session
                 objContent = Common.Serialize((SessionStateItemCollection)item.Items);
 
                 if (newItem == true)
-                {
-                    /*objDb.Add(id, ApplicationName, dSetTime,
-                        dSetTime.AddMinutes((Double)item.Timeout), dSetTime,
-                        0, item.Timeout, false,
-                        objContent, 0);*/
-
+                {                    
                     // Setting it up in memcached                    
                     MemcachedHolder objHolder = new MemcachedHolder(
                          objContent, false, dSetTime, 0, 0);
+                    this.IncrementMemcachedPC();
                     this._client.Store(StoreMode.Set,
                         id, objHolder, new TimeSpan(0, item.Timeout, 0));
                 }
                 else
                 {
-                    /*
-                    objDb.Update(id, ApplicationName, (int)lockId,
-                        dSetTime.AddMinutes((Double)item.Timeout),
-                        objContent, false);*/
-
                     // Setting it up in memcached                    
                     MemcachedHolder objHolder = new MemcachedHolder(
                         objContent, false, dSetTime, 0, 0);
 
+                    this.IncrementMemcachedPC();
                     this._client.Store(StoreMode.Set,
                         id, objHolder, new TimeSpan(0, item.Timeout, 0));
                 } 
@@ -548,7 +590,123 @@ namespace MemcachedProviders.Session
 
         public override bool SetItemExpireCallback(SessionStateItemExpireCallback expireCallback)
         {
+            this.IncrementTotalOperPC();
             return false;
-        }        
+        }
+
+        #region Performance Counter Methods
+        internal void CheckPerformanceCounterCategories()
+        {
+            if (!PerformanceCounterCategory.Exists(_strSessionProviderCat))
+            {
+                CounterCreationDataCollection counters = new CounterCreationDataCollection();
+
+                CounterCreationData totalOps = new CounterCreationData();
+                totalOps.CounterName = _strTotalOperName;
+                totalOps.CounterHelp = "Total number of operations executed";
+                totalOps.CounterType = PerformanceCounterType.NumberOfItems32;
+                counters.Add(totalOps);
+
+                CounterCreationData opsPerSecond = new CounterCreationData();
+                opsPerSecond.CounterName = _strOperPerSecName;
+                opsPerSecond.CounterHelp = "Number of operations executed per second";
+                opsPerSecond.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
+                counters.Add(opsPerSecond);
+
+                CounterCreationData memcachedOps = new CounterCreationData();
+                memcachedOps.CounterName = _strMemcachedOp;
+                memcachedOps.CounterHelp = "Number of Memcached operations execution";
+                memcachedOps.CounterType = PerformanceCounterType.NumberOfItems32;
+                counters.Add(memcachedOps);
+
+                CounterCreationData memcachedOpsPerSec = new CounterCreationData();
+                memcachedOpsPerSec.CounterName = _strMemcachedOpPerSec;
+                memcachedOpsPerSec.CounterHelp = "Number of Memcached operations per second";
+                memcachedOpsPerSec.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
+                counters.Add(memcachedOpsPerSec);
+
+                CounterCreationData dbOps = new CounterCreationData();
+                dbOps.CounterName = _strDbOp;
+                dbOps.CounterHelp = "Number of database operations execution";
+                dbOps.CounterType = PerformanceCounterType.NumberOfItems32;
+                counters.Add(dbOps);
+
+                CounterCreationData dbOpsPerSec = new CounterCreationData();
+                dbOpsPerSec.CounterName = _strDbOpPerSec;
+                dbOpsPerSec.CounterHelp = "Number of database operations execution";
+                dbOpsPerSec.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
+                counters.Add(dbOpsPerSec);
+
+                // create new category with the counters above
+                PerformanceCounterCategory.Create(_strSessionProviderCat,
+                        "Memcached Session Provider Performance Counter",
+                        PerformanceCounterCategoryType.SingleInstance, counters);
+            }
+
+            #region create counters to work with
+            _objTotalOperations = new PerformanceCounter();
+            _objTotalOperations.CategoryName = _strSessionProviderCat;
+            _objTotalOperations.CounterName = _strTotalOperName;
+            _objTotalOperations.MachineName = ".";
+            _objTotalOperations.ReadOnly = false;
+            _objTotalOperations.RawValue = 0;
+
+            _objOperationsPerSecond = new PerformanceCounter();
+            _objOperationsPerSecond.CategoryName = _strSessionProviderCat;
+            _objOperationsPerSecond.CounterName = _strOperPerSecName;
+            _objOperationsPerSecond.MachineName = ".";
+            _objOperationsPerSecond.ReadOnly = false;
+            _objOperationsPerSecond.RawValue = 0;
+
+            _objMemcachedOperations = new PerformanceCounter();
+            _objMemcachedOperations.CategoryName = _strSessionProviderCat;
+            _objMemcachedOperations.CounterName = _strMemcachedOp;
+            _objMemcachedOperations.MachineName = ".";
+            _objMemcachedOperations.ReadOnly = false;
+            _objMemcachedOperations.RawValue = 0;
+
+            _objMemcachedOperPerSec = new PerformanceCounter();
+            _objMemcachedOperPerSec.CategoryName = _strSessionProviderCat;
+            _objMemcachedOperPerSec.CounterName = _strMemcachedOpPerSec;
+            _objMemcachedOperPerSec.MachineName = ".";
+            _objMemcachedOperPerSec.ReadOnly = false;
+            _objMemcachedOperPerSec.RawValue = 0;
+
+            _objDbOperations = new PerformanceCounter();
+            _objDbOperations.CategoryName = _strSessionProviderCat;
+            _objDbOperations.CounterName = _strDbOp;
+            _objDbOperations.MachineName = ".";
+            _objDbOperations.ReadOnly = false;
+            _objDbOperations.RawValue = 0;
+
+            _objDbOperationsPerSec = new PerformanceCounter();
+            _objDbOperationsPerSec.CategoryName = _strSessionProviderCat;
+            _objDbOperationsPerSec.CounterName = _strDbOpPerSec;
+            _objDbOperationsPerSec.MachineName = ".";
+            _objDbOperationsPerSec.ReadOnly = false;
+            _objDbOperationsPerSec.RawValue = 0;
+            #endregion
+
+        }
+
+        internal void IncrementTotalOperPC()
+        {
+            this._objTotalOperations.Increment();
+            this._objOperationsPerSecond.Increment();
+        }
+
+        internal void IncrementMemcachedPC()
+        {
+            this._objMemcachedOperations.Increment();
+            this._objMemcachedOperPerSec.Increment();
+        }
+
+        internal void IncrementDbPC()
+        {
+            this._objDbOperations.Increment();
+            this._objDbOperationsPerSec.Increment();
+        }
+
+        #endregion
     }
 }
