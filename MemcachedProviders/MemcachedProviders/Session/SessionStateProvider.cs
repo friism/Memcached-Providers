@@ -198,7 +198,7 @@ namespace MemcachedProviders.Session
             //
             // Initialize Memcached Values
             //
-            _lTimeoutInMilliSec = _objConfig.Timeout.Milliseconds;
+            _lTimeoutInMilliSec = (long)_objConfig.Timeout.TotalMilliseconds;
 
             //Initialize Performance Counter
             this.CheckPerformanceCounterCategories();
