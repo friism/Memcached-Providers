@@ -82,7 +82,6 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 #endregion
 
 using System;
-using System.IO;
 using System.Web;
 using Enyim.Caching;
 using MemcachedProviders.Common;
@@ -94,10 +93,6 @@ namespace MemcachedProviders.Util
     {
         private const string ContextStreamFilterKey = "#Stream_Filter#";
         private MemcachedClient _client = MemcachedClientService.Instance.Client;
-
-        public MemcachedModule()
-        {
-        }
 
         public void Dispose()
         {
@@ -116,7 +111,6 @@ namespace MemcachedProviders.Util
             HttpApplication app = (HttpApplication)o;
             HttpContext context = app.Context;
 
-            object item = _client.Get(context.Request.FilePath);
             byte[] response = _client.Get(context.Request.FilePath) as byte[];
 
             if (response == null)
@@ -130,8 +124,7 @@ namespace MemcachedProviders.Util
             context.Response.ClearContent();
             context.Response.BinaryWrite(response);
 
-            /// Don't even worry about headers, just let asp.net generate them
-
+            // Don't even worry about headers, just let asp.net generate them
             app.CompleteRequest();
         }
 
@@ -139,7 +132,6 @@ namespace MemcachedProviders.Util
         {
             HttpApplication app = (HttpApplication)o;
             HttpContext context = app.Context;
-                       
 
             // Don't want to cache bad stuff
             if (context.Response.StatusCode == 200 && !context.Trace.IsEnabled)
@@ -155,75 +147,4 @@ namespace MemcachedProviders.Util
             }
         }
     }
-
-    [Serializable]
-    internal class CachingFilter : Stream
-    {
-        private MemoryStream _objMemoryStream;
-        private Stream _objOriginalStream;
-
-        public CachingFilter(Stream original_stream)
-        {
-            _objMemoryStream = new MemoryStream();
-            this._objOriginalStream = original_stream;
-        }
-
-        public override bool CanRead
-        {
-            get { return false; }
-        }
-
-        public override bool CanSeek
-        {
-            get { return false; }
-        }
-
-        public override bool CanWrite
-        {
-            get { return true; }
-        }
-
-        public override long Length
-        {
-            get { return _objOriginalStream.Length; }
-        }
-
-        public override long Position
-        {
-            get { return _objOriginalStream.Position; }
-            set { throw new InvalidOperationException(); }
-        }
-
-        public override void Flush()
-        {
-            _objOriginalStream.Flush();
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new InvalidOperationException();
-        }
-
-        public override void SetLength(long value)
-        {
-            throw new InvalidOperationException();
-        }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            throw new InvalidOperationException();
-        }
-
-        public byte[] GetData()
-        {
-            return _objMemoryStream.ToArray();
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            _objOriginalStream.Write(buffer, offset, count);
-            _objMemoryStream.Write(buffer, offset, count);
-        }
-    }
-
 }
