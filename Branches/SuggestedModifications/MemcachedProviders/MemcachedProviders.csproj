@@ -55,7 +55,6 @@
     <Compile Include="Common\MemcachedService.cs" />
     <Compile Include="Session\Db\IDbOperations.cs" />
     <Compile Include="Session\Db\SQLDbOperations.cs" />
-    <Compile Include="Session\Memcached\MemcachedOperations.cs" />
     <Compile Include="Session\Memcached\MemcachedHolder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Properties\Settings.settings">

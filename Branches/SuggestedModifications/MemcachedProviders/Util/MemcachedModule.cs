@@ -84,18 +84,15 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 using System;
 using System.IO;
 using System.Web;
-using System.Text;
-using System.Web.UI;
-using System.Globalization;
-using MemcachedProviders.Common;
 using Enyim.Caching;
+using MemcachedProviders.Common;
 
 
 namespace MemcachedProviders.Util
 {
     public class MemcachedModule : IHttpModule
     {
-        private static readonly string context_stream_filter_key = "#Stream_Filter#";
+        private const string ContextStreamFilterKey = "#Stream_Filter#";
         private MemcachedClient _client = MemcachedClientService.Instance.Client;
 
         public MemcachedModule()
@@ -109,8 +106,8 @@ namespace MemcachedProviders.Util
 
         public void Init(HttpApplication app)
         {
-            app.ResolveRequestCache += new EventHandler(OnResolveRequestCache);
-            app.UpdateRequestCache += new EventHandler(OnUpdateRequestCache);
+            app.ResolveRequestCache += OnResolveRequestCache;
+            app.UpdateRequestCache += OnUpdateRequestCache;
             
         }
 
@@ -126,7 +123,7 @@ namespace MemcachedProviders.Util
             {
                 CachingFilter filter = new CachingFilter(app.Response.Filter);
                 app.Response.Filter = filter;
-                app.Context.Items.Add(context_stream_filter_key, filter);
+                app.Context.Items.Add(ContextStreamFilterKey, filter);
                 return;
             }
 
@@ -147,9 +144,9 @@ namespace MemcachedProviders.Util
             // Don't want to cache bad stuff
             if (context.Response.StatusCode == 200 && !context.Trace.IsEnabled)
             {
-                CachingFilter cf = (CachingFilter)app.Context.Items[context_stream_filter_key];
+                CachingFilter cf = (CachingFilter)app.Context.Items[ContextStreamFilterKey];
                 
-                context.Items.Remove(context_stream_filter_key);
+                context.Items.Remove(ContextStreamFilterKey);
 
                 _client.Store(
                     Enyim.Caching.Memcached.StoreMode.Set,
