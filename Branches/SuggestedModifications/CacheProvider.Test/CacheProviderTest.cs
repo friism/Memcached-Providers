@@ -74,14 +74,9 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using NUnit.Core;
 using NUnit.Framework;
-using CacheProvider;
 using System.Diagnostics;
-using System.Collections;
 using MemcachedProviders.Cache;
-using System.Threading;
 
 namespace CacheProvider.Test
 {
