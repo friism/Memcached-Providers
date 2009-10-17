@@ -72,6 +72,7 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
  */
 #endregion
 
+using System;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Configuration.Provider;
