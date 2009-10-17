@@ -73,6 +73,7 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 #endregion
 
 using System;
+using System.Collections.Specialized;
 using System.Configuration;
 using System.Configuration.Provider;
 using System.Diagnostics;
@@ -93,16 +94,16 @@ namespace MemcachedProviders.Session
         private string _strConn;
         private string _strDbType;
         private ConnectionStringSettings _objConnectionStringSettings;
-        private SessionStateSection _objConfig = null;
-        private bool _objWriteExceptionsToEventLog = false;
-        private bool _bIsDbNone = false;
-        private string _strSessionProviderCat = "Memcached Session Provider";
-        private string _strTotalOperName = "# operations executed";
-        private string _strOperPerSecName = "# operations / sec";
-        private string _strMemcachedOp = "# of memcached operations executed";
-        private string _strMemcachedOpPerSec = "# of memcached operations / sec";
-        private string _strDbOp = "# of database operations executed";
-        private string _strDbOpPerSec = "# of database operations / sec";
+        private SessionStateSection _objConfig;
+        private bool _objWriteExceptionsToEventLog;
+        private bool _bIsDbNone;
+        private const string StrSessionProviderCat = "Memcached Session Provider";
+        private const string StrTotalOperName = "# operations executed";
+        private const string StrOperPerSecName = "# operations / sec";
+        private const string StrMemcachedOp = "# of memcached operations executed";
+        private const string StrMemcachedOpPerSec = "# of memcached operations / sec";
+        private const string StrDbOp = "# of database operations executed";
+        private const string StrDbOpPerSec = "# of database operations / sec";
         private PerformanceCounter _objTotalOperations;        
         private PerformanceCounter _objOperationsPerSecond;
         private PerformanceCounter _objMemcachedOperations;
@@ -111,8 +112,8 @@ namespace MemcachedProviders.Session
         private PerformanceCounter _objDbOperationsPerSec;
 
         // Memcached variables
-        private MemcachedClient _client = MemcachedClientService.Instance.Client;
-        private long _lTimeoutInMilliSec = 20000; // default Expire Time
+        private readonly MemcachedClient _client = MemcachedClientService.Instance.Client;
+
         #endregion
 
         public bool WriteExceptionsToEventLog
@@ -127,7 +128,7 @@ namespace MemcachedProviders.Session
             set { this._strApplicationName = value; }
         }
 
-        public override void Initialize(string name, System.Collections.Specialized.NameValueCollection config)
+        public override void Initialize(string name, NameValueCollection config)
         {
             //
             // Initialize values from web.config.
@@ -136,7 +137,7 @@ namespace MemcachedProviders.Session
             if (config == null)
                 throw new ArgumentNullException("config");
 
-            if (name == null || name.Length == 0)
+            if (String.IsNullOrEmpty(name))
                 name = "MemcachedSessionStateStore";
 
             if (String.IsNullOrEmpty(config["description"]))
@@ -182,7 +183,7 @@ namespace MemcachedProviders.Session
                       ConfigurationManager.ConnectionStrings[config["connectionStringName"]];
 
                     if (_objConnectionStringSettings == null ||
-                      _objConnectionStringSettings.ConnectionString.Trim() == "")
+                      _objConnectionStringSettings.ConnectionString.Trim() == string.Empty)
                     {
                         throw new ProviderException("Connection string cannot be blank.");
                     }
@@ -190,10 +191,6 @@ namespace MemcachedProviders.Session
                     _strConn = _objConnectionStringSettings.ConnectionString;
                 }
             }
-            //
-            // Initialize Memcached Values
-            //
-            _lTimeoutInMilliSec = (long)_objConfig.Timeout.TotalMilliseconds;
 
             //Initialize Performance Counter
             this.CheckPerformanceCounterCategories();
@@ -229,7 +226,7 @@ namespace MemcachedProviders.Session
                 using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
                 {
                     objDb.Add(id, ApplicationName, dSetTime,
-                        dSetTime.AddMinutes((double)timeout),
+                        dSetTime.AddMinutes(timeout),
                         dSetTime, 0, timeout, false, null, 1);
                 }
                 #endregion
@@ -516,16 +513,16 @@ namespace MemcachedProviders.Session
                 #region Db option
                 using (IDbOperations objDb = DbFactory.CreateDbOperations(_strDbType, _strConn))
                 {
-                    byte[] objContent = null;
+                    byte[] objContent;
                     DateTime dSetTime = DateTime.Now;
 
                     objContent = Common.Serialize((SessionStateItemCollection)item.Items);
 
-                    if (newItem == true)
+                    if (newItem)
                     {
                         this.IncrementDbPC();
                         objDb.Add(id, ApplicationName, dSetTime,
-                            dSetTime.AddMinutes((Double)item.Timeout), dSetTime,
+                            dSetTime.AddMinutes(item.Timeout), dSetTime,
                             0, item.Timeout, false,
                             objContent, 0);
 
@@ -540,7 +537,7 @@ namespace MemcachedProviders.Session
                     {
                         this.IncrementDbPC();
                         objDb.Update(id, ApplicationName, (int)lockId,
-                            dSetTime.AddMinutes((Double)item.Timeout),
+                            dSetTime.AddMinutes(item.Timeout),
                             objContent, false);
 
                         // Setting it up in memcached                    
@@ -556,12 +553,11 @@ namespace MemcachedProviders.Session
             }
             else // Just memcached version
             {
-                byte[] objContent = null;
                 DateTime dSetTime = DateTime.Now;
 
-                objContent = Common.Serialize((SessionStateItemCollection)item.Items);
+                byte[] objContent = Common.Serialize((SessionStateItemCollection)item.Items);
 
-                if (newItem == true)
+                if (newItem)
                 {                    
                     // Setting it up in memcached                    
                     MemcachedHolder objHolder = new MemcachedHolder(
@@ -592,91 +588,91 @@ namespace MemcachedProviders.Session
         #region Performance Counter Methods
         internal void CheckPerformanceCounterCategories()
         {
-            if (!PerformanceCounterCategory.Exists(_strSessionProviderCat))
+            if (!PerformanceCounterCategory.Exists(StrSessionProviderCat))
             {
                 CounterCreationDataCollection counters = new CounterCreationDataCollection();
 
                 CounterCreationData totalOps = new CounterCreationData();
-                totalOps.CounterName = _strTotalOperName;
+                totalOps.CounterName = StrTotalOperName;
                 totalOps.CounterHelp = "Total number of operations executed";
                 totalOps.CounterType = PerformanceCounterType.NumberOfItems32;
                 counters.Add(totalOps);
 
                 CounterCreationData opsPerSecond = new CounterCreationData();
-                opsPerSecond.CounterName = _strOperPerSecName;
+                opsPerSecond.CounterName = StrOperPerSecName;
                 opsPerSecond.CounterHelp = "Number of operations executed per second";
                 opsPerSecond.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
                 counters.Add(opsPerSecond);
 
                 CounterCreationData memcachedOps = new CounterCreationData();
-                memcachedOps.CounterName = _strMemcachedOp;
+                memcachedOps.CounterName = StrMemcachedOp;
                 memcachedOps.CounterHelp = "Number of Memcached operations execution";
                 memcachedOps.CounterType = PerformanceCounterType.NumberOfItems32;
                 counters.Add(memcachedOps);
 
                 CounterCreationData memcachedOpsPerSec = new CounterCreationData();
-                memcachedOpsPerSec.CounterName = _strMemcachedOpPerSec;
+                memcachedOpsPerSec.CounterName = StrMemcachedOpPerSec;
                 memcachedOpsPerSec.CounterHelp = "Number of Memcached operations per second";
                 memcachedOpsPerSec.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
                 counters.Add(memcachedOpsPerSec);
 
                 CounterCreationData dbOps = new CounterCreationData();
-                dbOps.CounterName = _strDbOp;
+                dbOps.CounterName = StrDbOp;
                 dbOps.CounterHelp = "Number of database operations execution";
                 dbOps.CounterType = PerformanceCounterType.NumberOfItems32;
                 counters.Add(dbOps);
 
                 CounterCreationData dbOpsPerSec = new CounterCreationData();
-                dbOpsPerSec.CounterName = _strDbOpPerSec;
+                dbOpsPerSec.CounterName = StrDbOpPerSec;
                 dbOpsPerSec.CounterHelp = "Number of database operations execution";
                 dbOpsPerSec.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
                 counters.Add(dbOpsPerSec);
 
                 // create new category with the counters above
-                PerformanceCounterCategory.Create(_strSessionProviderCat,
+                PerformanceCounterCategory.Create(StrSessionProviderCat,
                         "Memcached Session Provider Performance Counter",
                         PerformanceCounterCategoryType.SingleInstance, counters);
             }
 
             #region create counters to work with
             _objTotalOperations = new PerformanceCounter();
-            _objTotalOperations.CategoryName = _strSessionProviderCat;
-            _objTotalOperations.CounterName = _strTotalOperName;
+            _objTotalOperations.CategoryName = StrSessionProviderCat;
+            _objTotalOperations.CounterName = StrTotalOperName;
             _objTotalOperations.MachineName = ".";
             _objTotalOperations.ReadOnly = false;
             _objTotalOperations.RawValue = 0;
 
             _objOperationsPerSecond = new PerformanceCounter();
-            _objOperationsPerSecond.CategoryName = _strSessionProviderCat;
-            _objOperationsPerSecond.CounterName = _strOperPerSecName;
+            _objOperationsPerSecond.CategoryName = StrSessionProviderCat;
+            _objOperationsPerSecond.CounterName = StrOperPerSecName;
             _objOperationsPerSecond.MachineName = ".";
             _objOperationsPerSecond.ReadOnly = false;
             _objOperationsPerSecond.RawValue = 0;
 
             _objMemcachedOperations = new PerformanceCounter();
-            _objMemcachedOperations.CategoryName = _strSessionProviderCat;
-            _objMemcachedOperations.CounterName = _strMemcachedOp;
+            _objMemcachedOperations.CategoryName = StrSessionProviderCat;
+            _objMemcachedOperations.CounterName = StrMemcachedOp;
             _objMemcachedOperations.MachineName = ".";
             _objMemcachedOperations.ReadOnly = false;
             _objMemcachedOperations.RawValue = 0;
 
             _objMemcachedOperPerSec = new PerformanceCounter();
-            _objMemcachedOperPerSec.CategoryName = _strSessionProviderCat;
-            _objMemcachedOperPerSec.CounterName = _strMemcachedOpPerSec;
+            _objMemcachedOperPerSec.CategoryName = StrSessionProviderCat;
+            _objMemcachedOperPerSec.CounterName = StrMemcachedOpPerSec;
             _objMemcachedOperPerSec.MachineName = ".";
             _objMemcachedOperPerSec.ReadOnly = false;
             _objMemcachedOperPerSec.RawValue = 0;
 
             _objDbOperations = new PerformanceCounter();
-            _objDbOperations.CategoryName = _strSessionProviderCat;
-            _objDbOperations.CounterName = _strDbOp;
+            _objDbOperations.CategoryName = StrSessionProviderCat;
+            _objDbOperations.CounterName = StrDbOp;
             _objDbOperations.MachineName = ".";
             _objDbOperations.ReadOnly = false;
             _objDbOperations.RawValue = 0;
 
             _objDbOperationsPerSec = new PerformanceCounter();
-            _objDbOperationsPerSec.CategoryName = _strSessionProviderCat;
-            _objDbOperationsPerSec.CounterName = _strDbOpPerSec;
+            _objDbOperationsPerSec.CategoryName = StrSessionProviderCat;
+            _objDbOperationsPerSec.CounterName = StrDbOpPerSec;
             _objDbOperationsPerSec.MachineName = ".";
             _objDbOperationsPerSec.ReadOnly = false;
             _objDbOperationsPerSec.RawValue = 0;
