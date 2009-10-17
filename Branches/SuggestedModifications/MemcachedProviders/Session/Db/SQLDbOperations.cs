@@ -73,25 +73,20 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Data.SqlClient;
 using System.Data;
-using System.Data.Common;
-using System.Web.SessionState;
-using System.Web;
+using System.Data.SqlClient;
 using System.Data.SqlTypes;
+using System.Web;
+using System.Web.SessionState;
 
 namespace MemcachedProviders.Session.Db
 {
     internal class SQLDbOperations : IDbOperations
     {
-        private string _strConn;
-        private SqlConnection _objConn;
+        private readonly SqlConnection _objConn;
 
         public SQLDbOperations(string strConn)
         {
-            this._strConn = strConn;
             this._objConn = new SqlConnection(strConn);
         }
 

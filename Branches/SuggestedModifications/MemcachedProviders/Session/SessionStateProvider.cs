@@ -73,21 +73,16 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Configuration.Provider;
-using System.Web.SessionState;
-using System.IO;
-using System.Web;
-using System.Web.Configuration;
 using System.Configuration;
+using System.Configuration.Provider;
 using System.Diagnostics;
-using MemcachedProviders.Session.Memcached;
-using MemcachedProviders.Session.Db;
-using MemcachedProviders.Session;
-using MemcachedProviders.Common;
+using System.Web.Configuration;
+using System.Web.SessionState;
 using Enyim.Caching;
 using Enyim.Caching.Memcached;
+using MemcachedProviders.Common;
+using MemcachedProviders.Session.Db;
+using MemcachedProviders.Session.Memcached;
 
 namespace MemcachedProviders.Session
 {

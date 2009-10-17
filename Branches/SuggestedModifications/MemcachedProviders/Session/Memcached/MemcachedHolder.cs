@@ -73,8 +73,6 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MemcachedProviders.Session.Memcached
 {

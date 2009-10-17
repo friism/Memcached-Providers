@@ -73,13 +73,10 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Web.SessionState;
-using System.Web;
-using System.IO;
-using MemcachedProviders.Session;
 using System.Diagnostics;
+using System.IO;
+using System.Web;
+using System.Web.SessionState;
 using MemcachedProviders.Session.Db;
 
 namespace MemcachedProviders.Session
@@ -88,8 +85,6 @@ namespace MemcachedProviders.Session
     {
         private const string  eventSource = "MemcachedSessionStateStore";
         private const string eventLog = "Application";
-        private const string exceptionMessage =
-          "An exception occurred. Please contact your administrator.";
 
         public static SessionStateStoreData CreateNewStoreData
             (HttpContext context, int timeout)
@@ -139,7 +134,7 @@ namespace MemcachedProviders.Session
             string message =
               "An exception occurred communicating with the data source.\n\n";
             message += "Action: " + action + "\n\n";
-            message += "Exception: " + e.ToString();
+            message += "Exception: " + e;
 
             log.WriteEntry(message);
         }
