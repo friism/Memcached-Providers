@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependancyClient", "Dependa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enyim.Caching", "Enyim.Caching\Enyim.Caching.csproj", "{D438C0B3-A168-40B8-BDDD-61F0939DFF35}"
 EndProject
+Project("{4F174C21-8C12-11D0-8340-0000F80270F8}") = "DbSQL", "DatabaseScripts\SqlServer\DbSQL.dbp", "{0A4029E6-3809-47DD-8DCD-E2C88FC7C166}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
