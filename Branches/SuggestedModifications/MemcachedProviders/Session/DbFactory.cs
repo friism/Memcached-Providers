@@ -13,6 +13,8 @@ namespace MemcachedProviders.Session
                     return null;
                 case DatabaseEngine.SQLServer:
                     return new SQLDbOperations(connectionString);
+                case DatabaseEngine.MySQL:
+                    return new MySQLDbOperations(connectionString);
                 default:
                     string error = String.Format("Database engine type '{0}' is not yet supported.", databaseEngine);
                     throw new NotSupportedException(error);

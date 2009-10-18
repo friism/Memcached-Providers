@@ -38,6 +38,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL" />
+    <Reference Include="MySql.Data, Version=5.1.7.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Binaries\MySql.Data.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
@@ -56,6 +60,7 @@
     <Compile Include="Session\DbFactory.cs" />
     <Compile Include="Session\DatabaseEngine.cs" />
     <Compile Include="Session\Db\IDbOperations.cs" />
+    <Compile Include="Session\Db\MySQLDbOperations.cs" />
     <Compile Include="Session\Db\SQLDbOperations.cs" />
     <Compile Include="Session\Memcached\MemcachedHolder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
