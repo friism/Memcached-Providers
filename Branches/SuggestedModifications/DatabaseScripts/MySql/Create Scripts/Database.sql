@@ -1,2 +1,2 @@
-create database if not exists `memcache` character set'utf8' collate'utf8_general_ci';
-use `memcache`;
+CREATE DATABASE IF NOT EXISTS `memcache` CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
+USE `memcache`;
