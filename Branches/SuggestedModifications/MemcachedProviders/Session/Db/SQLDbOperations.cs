@@ -96,19 +96,19 @@ namespace MemcachedProviders.Session.Db
             DateTime dLockDate, int iLockId, int iTimeout, bool bLocked, byte[] objSessionItems, int iFlags)
         {
             SqlConnection objConn = this.GetConnection();
-            SqlCommand objComm = this.GetCommand("proc_Add", objConn);
+            SqlCommand objComm = GetCommand("proc_Add", objConn);
 
-            objComm.Parameters.Add(this.GetParameter("@SessionId", strSessionId));
-            objComm.Parameters.Add(this.GetParameter("@ApplicationName", strApplicationName));
-            objComm.Parameters.Add(this.GetParameter("@Created", dCreated));
-            objComm.Parameters.Add(this.GetParameter("@Expires", dExpires));
-            objComm.Parameters.Add(this.GetParameter("@LockDate", dLockDate));
-            objComm.Parameters.Add(this.GetParameter("@LockId", iLockId));
-            objComm.Parameters.Add(this.GetParameter("@Timeout", iTimeout));
-            objComm.Parameters.Add(this.GetParameter("@Locked", bLocked,DbType.Boolean,false));
-            objComm.Parameters.Add(this.GetParameter("@SessionItems", objSessionItems, DbType.Binary,true));
-            objComm.Parameters.Add(this.GetParameter("@Flags", iFlags));
-            SqlParameter output = this.GetParameter("@RETURN_VALUE", ParameterDirection.ReturnValue);
+            objComm.Parameters.Add(GetParameter("@SessionId", strSessionId));
+            objComm.Parameters.Add(GetParameter("@ApplicationName", strApplicationName));
+            objComm.Parameters.Add(GetParameter("@Created", dCreated));
+            objComm.Parameters.Add(GetParameter("@Expires", dExpires));
+            objComm.Parameters.Add(GetParameter("@LockDate", dLockDate));
+            objComm.Parameters.Add(GetParameter("@LockId", iLockId));
+            objComm.Parameters.Add(GetParameter("@Timeout", iTimeout));
+            objComm.Parameters.Add(GetParameter("@Locked", bLocked,DbType.Boolean,false));
+            objComm.Parameters.Add(GetParameter("@SessionItems", objSessionItems, DbType.Binary,true));
+            objComm.Parameters.Add(GetParameter("@Flags", iFlags));
+            SqlParameter output = GetParameter("@RETURN_VALUE", ParameterDirection.ReturnValue);
 
             objComm.Parameters.Add(output);
 
@@ -120,16 +120,16 @@ namespace MemcachedProviders.Session.Db
         public bool Update(string strSessionId, string strApplicationName, int iLockId, DateTime dExpires, byte[] objSessionItems, bool bLocked)
         {
             SqlConnection objConn = this.GetConnection();
-            SqlCommand objComm = this.GetCommand("proc_Update", objConn);
+            SqlCommand objComm = GetCommand("proc_Update", objConn);
 
-            objComm.Parameters.Add(this.GetParameter("@Expires", dExpires));
-            objComm.Parameters.Add(this.GetParameter("@SessionItems", objSessionItems));
-            objComm.Parameters.Add(this.GetParameter("@Locked", bLocked));
-            objComm.Parameters.Add(this.GetParameter("@SessionId", strSessionId));
-            objComm.Parameters.Add(this.GetParameter("@ApplicationName", strApplicationName));
-            objComm.Parameters.Add(this.GetParameter("@LockId", iLockId));
+            objComm.Parameters.Add(GetParameter("@Expires", dExpires));
+            objComm.Parameters.Add(GetParameter("@SessionItems", objSessionItems));
+            objComm.Parameters.Add(GetParameter("@Locked", bLocked));
+            objComm.Parameters.Add(GetParameter("@SessionId", strSessionId));
+            objComm.Parameters.Add(GetParameter("@ApplicationName", strApplicationName));
+            objComm.Parameters.Add(GetParameter("@LockId", iLockId));
                 
-            SqlParameter output = this.GetParameter("@RETURN_VALUE", ParameterDirection.ReturnValue);
+            SqlParameter output = GetParameter("@RETURN_VALUE", ParameterDirection.ReturnValue);
 
             objComm.Parameters.Add(output);
 
@@ -147,7 +147,6 @@ namespace MemcachedProviders.Session.Db
             out SessionStateActions actionFlags)
         {
             SqlConnection objConn = this.GetConnection();
-            SqlCommand objComm;
 
             SessionStateStoreData objItem = null;
             lockAge = TimeSpan.Zero;
@@ -170,10 +169,10 @@ namespace MemcachedProviders.Session.Db
             }
 
             // Retrieving current session item
-            objComm = this.GetCommand("proc_GetItem", objConn);
+            SqlCommand objComm = GetCommand("proc_GetItem", objConn);
 
-            objComm.Parameters.Add(this.GetParameter("@SessionId", strSessionId));
-            objComm.Parameters.Add(this.GetParameter("@ApplicationName", strApplicationName));
+            objComm.Parameters.Add(GetParameter("@SessionId", strSessionId));
+            objComm.Parameters.Add(GetParameter("@ApplicationName", strApplicationName));
 
             SqlDataReader reader = objComm.ExecuteReader(CommandBehavior.SingleRow);
 
@@ -259,12 +258,12 @@ namespace MemcachedProviders.Session.Db
         public bool ReleaseItem(string strSessionId, string strApplicationName, int iLockId, int iTime)
         {
             SqlConnection objConn = this.GetConnection();
-            SqlCommand objComm = this.GetCommand("proc_ReleaseItem", objConn);
+            SqlCommand objComm = GetCommand("proc_ReleaseItem", objConn);
 
-            objComm.Parameters.Add(this.GetParameter("@SessionId", strSessionId));
-            objComm.Parameters.Add(this.GetParameter("@ApplicationName", strApplicationName));
-            objComm.Parameters.Add(this.GetParameter("@AddMin", iTime));
-            objComm.Parameters.Add(this.GetParameter("@LockId", iLockId));
+            objComm.Parameters.Add(GetParameter("@SessionId", strSessionId));
+            objComm.Parameters.Add(GetParameter("@ApplicationName", strApplicationName));
+            objComm.Parameters.Add(GetParameter("@AddMin", iTime));
+            objComm.Parameters.Add(GetParameter("@LockId", iLockId));
 
             return (objComm.ExecuteNonQuery() > 0);
         }
@@ -272,21 +271,21 @@ namespace MemcachedProviders.Session.Db
         public bool LockItem(string strSessionId, string strApplicationName, int iLockId)
         {
             SqlConnection objConn = this.GetConnection();
-            SqlCommand objComm = this.GetCommand("proc_LockItem", objConn);
+            SqlCommand objComm = GetCommand("proc_LockItem", objConn);
 
-            objComm.Parameters.Add(this.GetParameter("@SessionId", strSessionId));
-            objComm.Parameters.Add(this.GetParameter("@ApplicationName", strApplicationName));
-            objComm.Parameters.Add(this.GetParameter("@LockId", iLockId));
+            objComm.Parameters.Add(GetParameter("@SessionId", strSessionId));
+            objComm.Parameters.Add(GetParameter("@ApplicationName", strApplicationName));
+            objComm.Parameters.Add(GetParameter("@LockId", iLockId));
             return (objComm.ExecuteNonQuery() > 0);
         }
 
         public bool LockItemWithoutLockId(string strSessionId, string strApplicationName)
         {
             SqlConnection objConn = this.GetConnection();
-            SqlCommand objComm = this.GetCommand("proc_LockItemWithoutLockId", objConn);
+            SqlCommand objComm = GetCommand("proc_LockItemWithoutLockId", objConn);
 
-            objComm.Parameters.Add(this.GetParameter("@SessionId", strSessionId));
-            objComm.Parameters.Add(this.GetParameter("@ApplicationName", strApplicationName));
+            objComm.Parameters.Add(GetParameter("@SessionId", strSessionId));
+            objComm.Parameters.Add(GetParameter("@ApplicationName", strApplicationName));
                 
             return (objComm.ExecuteNonQuery() > 0);
         }
@@ -294,21 +293,21 @@ namespace MemcachedProviders.Session.Db
         public bool RemoveItem(string strSessionId, string strApplicationName, int iLockId)
         {
             SqlConnection objConn = this.GetConnection();
-            SqlCommand objComm = this.GetCommand("proc_RemoveItemWithLock", objConn);
+            SqlCommand objComm = GetCommand("proc_RemoveItemWithLock", objConn);
 
-            objComm.Parameters.Add(this.GetParameter("@SessionId", strSessionId));
-            objComm.Parameters.Add(this.GetParameter("@ApplicationName", strApplicationName));
-            objComm.Parameters.Add(this.GetParameter("@LockId", iLockId));
+            objComm.Parameters.Add(GetParameter("@SessionId", strSessionId));
+            objComm.Parameters.Add(GetParameter("@ApplicationName", strApplicationName));
+            objComm.Parameters.Add(GetParameter("@LockId", iLockId));
             return (objComm.ExecuteNonQuery() > 0);
         }
 
         public bool RemoveItem(string strSessionId, string strApplicationName)
         {
             SqlConnection objConn = this.GetConnection();
-            SqlCommand objComm = this.GetCommand("proc_RemoveItem", objConn);
+            SqlCommand objComm = GetCommand("proc_RemoveItem", objConn);
 
-            objComm.Parameters.Add(this.GetParameter("@SessionId", strSessionId));
-            objComm.Parameters.Add(this.GetParameter("@ApplicationName", strApplicationName));
+            objComm.Parameters.Add(GetParameter("@SessionId", strSessionId));
+            objComm.Parameters.Add(GetParameter("@ApplicationName", strApplicationName));
             return (objComm.ExecuteNonQuery() > 0);
         }
 
@@ -322,11 +321,11 @@ namespace MemcachedProviders.Session.Db
         public bool ResetItemTimeout(string strSessionId, string strApplicationName, int iTime)
         {
             SqlConnection objConn = this.GetConnection();
-            SqlCommand objComm = this.GetCommand("proc_ResetItemTimeout", objConn);
+            SqlCommand objComm = GetCommand("proc_ResetItemTimeout", objConn);
 
-            objComm.Parameters.Add(this.GetParameter("@SessionId", strSessionId));
-            objComm.Parameters.Add(this.GetParameter("@ApplicationName", strApplicationName));
-            objComm.Parameters.Add(this.GetParameter("@AddMin", iTime));
+            objComm.Parameters.Add(GetParameter("@SessionId", strSessionId));
+            objComm.Parameters.Add(GetParameter("@ApplicationName", strApplicationName));
+            objComm.Parameters.Add(GetParameter("@AddMin", iTime));
 
             return (objComm.ExecuteNonQuery() > 0);
         }
@@ -339,44 +338,36 @@ namespace MemcachedProviders.Session.Db
             return this._objConn;
         }
 
-        private SqlCommand GetCommand(string strComm, SqlConnection objConn)
+        private static SqlCommand GetCommand(string strComm, SqlConnection objConn)
         {
             if (objConn.State != ConnectionState.Open)
             {
                 objConn.Open();
             }
 
-            SqlCommand objComm = new SqlCommand(strComm,objConn);
-            objComm.CommandType = CommandType.StoredProcedure;
-
-            return objComm;
+            return new SqlCommand(strComm,objConn) {CommandType = CommandType.StoredProcedure};
         }
 
-        private SqlParameter GetParameter(string strName, object objValue)
+        private static SqlParameter GetParameter(string strName, object objValue)
         {
-            SqlParameter obj = new SqlParameter(strName, objValue);
-            obj.Direction = ParameterDirection.Input;
-            return obj;
+            return new SqlParameter(strName, objValue) {Direction = ParameterDirection.Input};
         }
 
-        private SqlParameter GetParameter(string strName, object objValue, DbType type, bool isNullable)
+        private static SqlParameter GetParameter(string strName, object objValue, DbType type, bool isNullable)
         {
-            SqlParameter obj = new SqlParameter();
-            obj.ParameterName = strName;
-            obj.DbType = type;
-            obj.Direction = ParameterDirection.Input;
-            obj.IsNullable = isNullable;
-            obj.Value = objValue;
-            
-            return obj;
+            return new SqlParameter
+                                   {
+                                       ParameterName = strName,
+                                       DbType = type,
+                                       Direction = ParameterDirection.Input,
+                                       IsNullable = isNullable,
+                                       Value = objValue
+                                   };
         }
 
-        private SqlParameter GetParameter(string strName, ParameterDirection direction)
+        private static SqlParameter GetParameter(string strName, ParameterDirection direction)
         {
-            SqlParameter obj = new SqlParameter();
-            obj.ParameterName = strName;
-            obj.Direction = direction;
-            return obj;
+            return new SqlParameter {ParameterName = strName, Direction = direction};
         }
 
         #endregion
