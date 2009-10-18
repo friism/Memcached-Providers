@@ -88,32 +88,36 @@ namespace MemcachedProviders.Session
 
         public static byte[] Serialize(SessionStateItemCollection items)
         {
-            var ms = new MemoryStream();
-            var writer = new BinaryWriter(ms);
-
-            if (items != null)
+            using (var ms = new MemoryStream())
             {
-                items.Serialize(writer);
+                using (var writer = new BinaryWriter(ms))
+                {
+                    if (items != null)
+                    {
+                        items.Serialize(writer);
+                    }
+
+                    writer.Close();
+
+                    return ms.ToArray();
+                }
             }
-
-            writer.Close();
-
-            return ms.ToArray();
         }
 
         public static SessionStateStoreData Deserialize(HttpContext context, byte[] serializedItems, int timeout)
         {
-            var ms = new MemoryStream(serializedItems);
-
-            var sessionItems = new SessionStateItemCollection();
-
-            if (ms.Length > 0)
+            using (var ms = new MemoryStream(serializedItems))
             {
-                var reader = new BinaryReader(ms);
-                sessionItems = SessionStateItemCollection.Deserialize(reader);
-            }
+                var sessionItems = new SessionStateItemCollection();
 
-            return new SessionStateStoreData(sessionItems, SessionStateUtility.GetSessionStaticObjects(context), timeout);
+                if (ms.Length > 0)
+                {
+                    var reader = new BinaryReader(ms);
+                    sessionItems = SessionStateItemCollection.Deserialize(reader);
+                }
+
+                return new SessionStateStoreData(sessionItems, SessionStateUtility.GetSessionStaticObjects(context), timeout);
+            }
         }
     }
 }
