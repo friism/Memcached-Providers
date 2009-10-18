@@ -53,6 +53,8 @@
     <Compile Include="Cache\MemcachedCacheProvider.cs" />
     <Compile Include="Common\DependancyClient.cs" />
     <Compile Include="Common\MemcachedService.cs" />
+    <Compile Include="Session\DbFactory.cs" />
+    <Compile Include="Session\DatabaseEngine.cs" />
     <Compile Include="Session\Db\IDbOperations.cs" />
     <Compile Include="Session\Db\SQLDbOperations.cs" />
     <Compile Include="Session\Memcached\MemcachedHolder.cs" />

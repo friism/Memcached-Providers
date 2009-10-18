@@ -221,7 +221,10 @@ namespace MemcachedProviders.Session
                 IncrementDbPC();
                 using (IDbOperations objDb = DbFactory.CreateDbOperations(_databaseEngineType, _strConn))
                 {
-                    objDb.Add(id, ApplicationName, dSetTime, dSetTime.AddMinutes(timeout), dSetTime, 0, timeout, false, null, 1);
+                    if (!objDb.Add(id, ApplicationName, dSetTime, dSetTime.AddMinutes(timeout), dSetTime, 0, timeout, false, null, 1))
+                    {
+                        throw new ProviderException("CreateUninitializedItem: Call to DB.Add() returned non-success.");
+                    }
                 }
 
                 #endregion
@@ -519,17 +522,21 @@ namespace MemcachedProviders.Session
                     IncrementDbPC();
                     using (IDbOperations objDb = DbFactory.CreateDbOperations(_databaseEngineType, _strConn))
                     {
-                        objDb.Add(
-                            id,
-                            ApplicationName,
-                            dSetTime,
-                            dSetTime.AddMinutes(item.Timeout),
-                            dSetTime,
-                            0,
-                            item.Timeout,
-                            false,
-                            objContent,
-                            0);
+                        if (
+                            !objDb.Add(
+                                 id,
+                                 ApplicationName,
+                                 dSetTime,
+                                 dSetTime.AddMinutes(item.Timeout),
+                                 dSetTime,
+                                 0,
+                                 item.Timeout,
+                                 false,
+                                 objContent,
+                                 0))
+                        {
+                            throw new ProviderException("SetAndReleaseItemExclusive: Call to DB.Add() returned non-success.");
+                        }
                     }
 
                     // Setting it up in memcached                    
@@ -542,7 +549,10 @@ namespace MemcachedProviders.Session
                     IncrementDbPC();
                     using (IDbOperations objDb = DbFactory.CreateDbOperations(_databaseEngineType, _strConn))
                     {
-                        objDb.Update(id, ApplicationName, (int) lockId, dSetTime.AddMinutes(item.Timeout), objContent, false);
+                        if (!objDb.Update(id, ApplicationName, (int) lockId, dSetTime.AddMinutes(item.Timeout), objContent, false))
+                        {
+                            throw new ProviderException("SetAndReleaseItemExclusive: Call to DB.Update() returned non-success.");
+                        }
                     }
 
                     // Setting it up in memcached                    
