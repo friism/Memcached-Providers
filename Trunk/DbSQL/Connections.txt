@@ -1,0 +1,4 @@
+DBRefFolders found in your dbp file
+Connect String: Data Source=.;Initial Catalog=Session;Integrated Security=True;Pooling=False
+Provider: Microsoft SQL Server
+
