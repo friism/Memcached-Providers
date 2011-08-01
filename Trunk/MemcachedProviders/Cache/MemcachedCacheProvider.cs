@@ -90,19 +90,6 @@ namespace MemcachedProviders.Cache
         private long _lDefaultExpireTime = 2000; // default Expire Time
         private string _strKeySuffix = string.Empty;
         private MemcachedClient _client = null;
-        private string _strCacheCatName = "Memcached Cache Provider";
-        private string _strTotalOpName = "# operations executed";
-        private string _strOpPerSecName = "# operations / sec";
-        private string _strAddOpName = "# of add operations executed";
-        private string _strGetOpName = "# of get operations executed";
-        private string _strAddOpPerSecName = "# of add operations / sec";
-        private string _strGetOpPerSecName = "# of get operations / sec";
-        private PerformanceCounter _objTotalOperations;
-        private PerformanceCounter _objOperationsPerSecond;
-        private PerformanceCounter _objAddOperations;
-        private PerformanceCounter _objGetOperations;
-        private PerformanceCounter _objAddPerSecondOperations;
-        private PerformanceCounter _objGetPerSecondOperations;
         #endregion
                
 
@@ -171,8 +158,6 @@ namespace MemcachedProviders.Cache
 
         public override bool Add(string strKey, object objValue, bool bDefaultExpire)
         {
-            this.IncrementTotalOperPC();
-            this.IncrementAddOperPC();
             if (bDefaultExpire == true)
             {
                 return this._client.Store(StoreMode.Add, _strKeySuffix + strKey, objValue,
@@ -186,31 +171,23 @@ namespace MemcachedProviders.Cache
 
         public override bool Add(string strKey, object objValue)
         {
-            this.IncrementTotalOperPC();
-            this.IncrementAddOperPC();
             return this._client.Store(StoreMode.Set, _strKeySuffix + strKey, objValue); 
         }
         
         public override bool Add(string strKey, object objValue, long lNumOfMilliSeconds)
         {
-            this.IncrementTotalOperPC();
-            this.IncrementAddOperPC();
             return this._client.Store(StoreMode.Set, _strKeySuffix + strKey, objValue,
                     DateTime.Now.AddMilliseconds(lNumOfMilliSeconds));
         }
 
         public override bool Add(string strKey, object objValue, TimeSpan timeSpan)
         {
-            this.IncrementTotalOperPC();
-            this.IncrementAddOperPC();
             return this._client.Store(StoreMode.Set, _strKeySuffix + strKey,
                 objValue, timeSpan);
         }
 
         public override object Get(string strKey)
         {
-            this.IncrementTotalOperPC();
-            this.IncrementGetOperPC();
             return this._client.Get(_strKeySuffix + strKey);
         }
 
@@ -221,9 +198,6 @@ namespace MemcachedProviders.Cache
         /// <returns></returns>
         public override IDictionary<string, object> Get(params string[] keys)
         {
-            this.IncrementTotalOperPC();
-            this.IncrementGetOperPC();
-
             IList<string> keysList = new List<string>();
 
             foreach (string str in keys)
@@ -244,13 +218,11 @@ namespace MemcachedProviders.Cache
 
         public override void RemoveAll()
         {
-            this.IncrementTotalOperPC();
             this._client.FlushAll();
         }
 
         public override bool Remove(string strKey)
         {
-            this.IncrementTotalOperPC();
             return this._client.Remove(_strKeySuffix + strKey);            
         }
 
@@ -268,135 +240,17 @@ namespace MemcachedProviders.Cache
         
         public override T Get<T>(string strKey)
         {
-            this.IncrementTotalOperPC();
-            this.IncrementGetOperPC();
             return this._client.Get<T>(_strKeySuffix+strKey);
         }
 
         public override long Increment(string strKey, long lAmount)
         {
-            this.IncrementTotalOperPC();
             return (long)this._client.Increment(_strKeySuffix +strKey, default(ulong), (ulong)lAmount);
         }
 
         public override long Decrement(string strKey, long lAmount)
         {
-            this.IncrementTotalOperPC();
             return (long)this._client.Decrement(_strKeySuffix + strKey, default(ulong), (ulong)lAmount);
-        }
-        #endregion
-
-        #region Performance Counter Methods
-        internal override void CheckPerformanceCounterCategories()
-        {
-            if (!PerformanceCounterCategory.Exists(_strCacheCatName))
-            {
-                CounterCreationDataCollection counters = new CounterCreationDataCollection();
-                                
-                CounterCreationData totalOps = new CounterCreationData();
-                totalOps.CounterName = _strTotalOpName;
-                totalOps.CounterHelp = "Total number of operations executed";
-                totalOps.CounterType = PerformanceCounterType.NumberOfItems32;
-                counters.Add(totalOps);
-                                
-                CounterCreationData opsPerSecond = new CounterCreationData();
-                opsPerSecond.CounterName = _strOpPerSecName;
-                opsPerSecond.CounterHelp = "Number of operations executed per second";
-                opsPerSecond.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
-                counters.Add(opsPerSecond);
-                                
-                CounterCreationData addOps = new CounterCreationData();
-                addOps.CounterName = _strAddOpName;
-                addOps.CounterHelp = "Number of add operations execution";
-                addOps.CounterType = PerformanceCounterType.NumberOfItems32;
-                counters.Add(addOps);
-
-                CounterCreationData addOpsPerSec = new CounterCreationData();
-                addOpsPerSec.CounterName = _strAddOpPerSecName;
-                addOpsPerSec.CounterHelp = "Number of add operations per second";
-                addOpsPerSec.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
-                counters.Add(addOpsPerSec);
-                                
-                CounterCreationData getOps = new CounterCreationData();
-                getOps.CounterName = _strGetOpName;
-                getOps.CounterHelp = "Number of get operations execution";
-                getOps.CounterType = PerformanceCounterType.NumberOfItems32;
-                counters.Add(getOps);
-
-                CounterCreationData getOpsPerSec = new CounterCreationData();
-                getOpsPerSec.CounterName = _strGetOpPerSecName;
-                getOpsPerSec.CounterHelp = "Number of get operations per second";
-                getOpsPerSec.CounterType = PerformanceCounterType.RateOfCountsPerSecond32;
-                counters.Add(getOpsPerSec);
-                
-                // create new category with the counters above
-                PerformanceCounterCategory.Create(_strCacheCatName,
-                        "Memcached Cache Provider Performance Counter", 
-                        PerformanceCounterCategoryType.SingleInstance, counters);
-            }
-
-            // create counters to work with
-            _objTotalOperations = new PerformanceCounter();
-            _objTotalOperations.CategoryName = _strCacheCatName;
-            _objTotalOperations.CounterName = _strTotalOpName;
-            _objTotalOperations.MachineName = ".";
-            _objTotalOperations.ReadOnly = false;
-            _objTotalOperations.RawValue = 0;
-
-            _objOperationsPerSecond = new PerformanceCounter();
-            _objOperationsPerSecond.CategoryName = _strCacheCatName;
-            _objOperationsPerSecond.CounterName = _strOpPerSecName;
-            _objOperationsPerSecond.MachineName = ".";
-            _objOperationsPerSecond.ReadOnly = false;
-            _objOperationsPerSecond.RawValue = 0;
-
-            _objAddOperations = new PerformanceCounter();
-            _objAddOperations.CategoryName = _strCacheCatName;
-            _objAddOperations.CounterName = _strAddOpName;
-            _objAddOperations.MachineName = ".";
-            _objAddOperations.ReadOnly = false;
-            _objAddOperations.RawValue = 0;
-
-            _objAddPerSecondOperations = new PerformanceCounter();
-            _objAddPerSecondOperations.CategoryName = _strCacheCatName;
-            _objAddPerSecondOperations.CounterName = _strAddOpPerSecName;
-            _objAddPerSecondOperations.MachineName = ".";
-            _objAddPerSecondOperations.ReadOnly = false;
-            _objAddPerSecondOperations.RawValue = 0;
-
-            _objGetOperations = new PerformanceCounter();
-            _objGetOperations.CategoryName = _strCacheCatName;
-            _objGetOperations.CounterName = _strGetOpName;
-            _objGetOperations.MachineName = ".";
-            _objGetOperations.ReadOnly = false;
-            _objGetOperations.RawValue = 0;
-
-            _objGetPerSecondOperations = new PerformanceCounter();
-            _objGetPerSecondOperations.CategoryName = _strCacheCatName;
-            _objGetPerSecondOperations.CounterName = _strGetOpPerSecName;
-            _objGetPerSecondOperations.MachineName = ".";
-            _objGetPerSecondOperations.ReadOnly = false;
-            _objGetPerSecondOperations.RawValue = 0;
-
-
-        }
-
-        internal void IncrementTotalOperPC()
-        {
-            this._objTotalOperations.Increment();
-            this._objOperationsPerSecond.Increment();
-        }
-
-        internal void IncrementAddOperPC()
-        {
-            this._objAddOperations.Increment();
-            this._objAddPerSecondOperations.Increment();
-        }
-
-        internal void IncrementGetOperPC()
-        {
-            this._objGetOperations.Increment();
-            this._objGetPerSecondOperations.Increment();
         }
         #endregion
     }

@@ -114,12 +114,6 @@ namespace MemcachedProviders.Cache
                         {
                             throw new ProviderException("Unable to load default cache provider");
                         }
-                        else
-                        {
-                            //creating performance counter categories
-                            _objProvider.CheckPerformanceCounterCategories();
-                        }
-
                     }
                 }
             }
