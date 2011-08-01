@@ -276,13 +276,13 @@ namespace MemcachedProviders.Cache
         public override long Increment(string strKey, long lAmount)
         {
             this.IncrementTotalOperPC();
-            return this._client.Increment(_strKeySuffix +strKey, (uint)lAmount);
+            return (long)this._client.Increment(_strKeySuffix +strKey, default(ulong), (ulong)lAmount);
         }
 
         public override long Decrement(string strKey, long lAmount)
         {
             this.IncrementTotalOperPC();
-            return this._client.Decrement(_strKeySuffix + strKey, (uint)lAmount);
+            return (long)this._client.Decrement(_strKeySuffix + strKey, default(ulong), (ulong)lAmount);
         }
         #endregion
 
