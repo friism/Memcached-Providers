@@ -80,12 +80,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MemcachedProviders\MemcachedProviders.csproj">
-      <Project>{B062D12C-EFB7-4CB5-B560-FB2387468E82}</Project>
-      <Name>MemcachedProviders</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
       <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
@@ -101,6 +95,12 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MemcachedProviders\MemcachedProviders.csproj">
+      <Project>{B062D12C-EFB7-4CB5-B560-FB2387468E82}</Project>
+      <Name>MemcachedProviders</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
