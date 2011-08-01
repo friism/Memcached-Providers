@@ -73,14 +73,11 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
 using System.Collections;
-using MemcachedProviders.Properties;
-using MemcachedProviders.Common;
+using System.Collections.Generic;
 using Enyim.Caching;
 using Enyim.Caching.Memcached;
+using MemcachedProviders.Common;
 
 namespace MemcachedProviders.Cache
 {

@@ -74,10 +74,7 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Configuration.Provider;
-using System.Collections.Specialized;
-using System.Collections;
 
 namespace MemcachedProviders.Cache
 {
