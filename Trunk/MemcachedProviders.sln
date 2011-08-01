@@ -21,30 +21,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enyim.Caching", "Enyim.Caching\Enyim.Caching.csproj", "{D438C0B3-A168-40B8-BDDD-61F0939DFF35}"
 EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 7
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs06.codeplex.com/
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = DbSQL\\DbSQL.dbp
-		SccProjectName1 = DbSQL
-		SccLocalPath1 = DbSQL
-		SccProjectUniqueName2 = MemcachedProviders\\MemcachedProviders.csproj
-		SccProjectName2 = MemcachedProviders
-		SccLocalPath2 = MemcachedProviders
-		SccProjectUniqueName3 = CacheProvider.Test\\CacheProvider.Test.csproj
-		SccProjectName3 = CacheProvider.Test
-		SccLocalPath3 = CacheProvider.Test
-		SccProjectUniqueName4 = DependancyServer\\DependancyServer.csproj
-		SccProjectName4 = DependancyServer
-		SccLocalPath4 = DependancyServer
-		SccProjectUniqueName5 = DependancyClient\\DependancyClient.csproj
-		SccProjectName5 = DependancyClient
-		SccLocalPath5 = DependancyClient
-		SccProjectUniqueName6 = Enyim.Caching\\Enyim.Caching.csproj
-		SccProjectName6 = Enyim.Caching
-		SccLocalPath6 = Enyim.Caching
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

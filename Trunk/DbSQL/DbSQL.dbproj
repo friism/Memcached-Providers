@@ -3,10 +3,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <PostUpgradeAddToSCC>;C:\Users\friism\Documents\Visual Studio 2010\Projects\Memcached-Providers\Trunk\DbSQL\DbSQL.dbproj;C:\Users\friism\Documents\Visual Studio 2010\Projects\Memcached-Providers\Trunk\DbSQL\Connections.txt;C:\Users\friism\Documents\Visual Studio 2010\Projects\Memcached-Providers\Trunk\DbSQL\Scripts\Post-Deployment\Script.PostDeployment.sql;C:\Users\friism\Documents\Visual Studio 2010\Projects\Memcached-Providers\Trunk\DbSQL\Scripts\Pre-Deployment\Script.PreDeployment.sql</PostUpgradeAddToSCC>
-    <SccProvider>SAK</SccProvider>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>
+    </SccProvider>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccProjectName>
+    </SccProjectName>
     <PreviousProjectVersion>4.0</PreviousProjectVersion>
     <UpgradedFromDBP>True</UpgradedFromDBP>
     <Name>dbpProjectName</Name>
