@@ -4,8 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EAF584A0-A5F1-47BF-BC54-004C3978ACE8}"
 	ProjectSection(SolutionItems) = preProject
 		License.txt = License.txt
-		log4net.dll = log4net.dll
-		SmartThreadPool.dll = SmartThreadPool.dll
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemcachedProviders", "MemcachedProviders\MemcachedProviders.csproj", "{B062D12C-EFB7-4CB5-B560-FB2387468E82}"
