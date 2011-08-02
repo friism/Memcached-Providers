@@ -96,20 +96,6 @@ namespace MemcachedProviders.Session
         private SessionStateSection _objConfig = null;
         private bool _objWriteExceptionsToEventLog = false;
         private bool _bIsDbNone = false;
-        private string _strSessionProviderCat = "Memcached Session Provider";
-        private string _strTotalOperName = "# operations executed";
-        private string _strOperPerSecName = "# operations / sec";
-        private string _strMemcachedOp = "# of memcached operations executed";
-        private string _strMemcachedOpPerSec = "# of memcached operations / sec";
-        private string _strDbOp = "# of database operations executed";
-        private string _strDbOpPerSec = "# of database operations / sec";
-        private PerformanceCounter _objTotalOperations;        
-        private PerformanceCounter _objOperationsPerSecond;
-        private PerformanceCounter _objMemcachedOperations;
-        private PerformanceCounter _objMemcachedOperPerSec;
-        private PerformanceCounter _objDbOperations;
-        private PerformanceCounter _objDbOperationsPerSec;
-
         // Memcached variables
         private MemcachedClient _client = MemcachedClientService.Instance.Client;
         private long _lTimeoutInMilliSec = 20000; // default Expire Time
