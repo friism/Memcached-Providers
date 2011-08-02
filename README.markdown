@@ -1,0 +1,1 @@
+This is a fork of the [Memcached Providers project](http://memcachedproviders.codeplex.com/).
