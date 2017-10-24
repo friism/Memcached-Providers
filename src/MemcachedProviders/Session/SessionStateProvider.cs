@@ -97,11 +97,16 @@ namespace MemcachedProviders.Session
         private bool _objWriteExceptionsToEventLog = false;
         private bool _bIsDbNone = false;
         // Memcached variables
-        private MemcachedClient _client = MemcachedClientService.Instance.Client;
+        protected IMemcachedClient _client;
         private long _lTimeoutInMilliSec = 20000; // default Expire Time
         #endregion
 
-        public bool WriteExceptionsToEventLog
+	    public SessionStateProvider(IMemcachedClient memcachedClient)
+	    {
+		    _client = memcachedClient;
+	    }
+
+	    public bool WriteExceptionsToEventLog
         {
             get { return _objWriteExceptionsToEventLog; }
             set { _objWriteExceptionsToEventLog = value; }
